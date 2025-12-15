@@ -13,6 +13,11 @@
         android:theme="@style/Theme.TickIt">
         <activity
             android:name=".ui.activity.MainActivity"
+            android:exported="false">
+
+        </activity>
+
+        <activity android:name=".ui.activity.AuthActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

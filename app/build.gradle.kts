@@ -40,6 +40,18 @@ android {
 
 dependencies {
 
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+
+    implementation("androidx.fragment:fragment-ktx:1.8.9")
+    implementation("androidx.activity:activity-ktx:1.12.1")
+
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
+    implementation("com.intuit.sdp:sdp-android:1.1.1")
+    implementation("com.google.android.material:material:1.11.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0")
+
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

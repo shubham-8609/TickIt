@@ -5,14 +5,22 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import com.codeleg.tickit.R
 import com.codeleg.tickit.databinding.FragmentSignUpBinding
+import com.codeleg.tickit.ui.viewmodel.AuthViewModel
+import com.google.android.material.transition.platform.MaterialFade
 
 class SignUpFragment : Fragment() {
 
-    var _binding: FragmentSignUpBinding? = null
-    val binding get() = _binding!!
-
+    private var _binding: FragmentSignUpBinding? = null
+    private val binding get() = _binding!!
+    private val authVM: AuthViewModel by activityViewModels()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enterTransition = MaterialFade()
+        exitTransition = MaterialFade()
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -21,12 +29,6 @@ class SignUpFragment : Fragment() {
 
         binding.tvLoginRedirect.setOnClickListener {
             parentFragmentManager.beginTransaction()
-                .setCustomAnimations(
-                    android.R.anim.slide_in_left,
-                    android.R.anim.slide_out_right,
-                    android.R.anim.slide_in_left,
-                    android.R.anim.slide_out_right
-                )
                 .replace(R.id.auth_container, LoginFragment())
                 .commit()
         }

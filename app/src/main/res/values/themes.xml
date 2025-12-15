@@ -4,6 +4,7 @@
 
         <item name="android:statusBarColor">?attr/colorPrimary</item>
         <item name="android:navigationBarColor">?attr/colorSurface</item>
+        <item name="android:windowContentTransitions">true</item>
 
         <!-- Primary colors -->
         <item name="colorPrimary">@color/md_theme_light_primary</item>
