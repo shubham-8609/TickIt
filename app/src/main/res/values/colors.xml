@@ -2,4 +2,33 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Primary (Main Pink) -->
+    <color name="md_theme_light_primary">#E91E63</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#FFD8E4</color>
+    <color name="md_theme_light_onPrimaryContainer">#3A0015</color>
+
+    <!-- Secondary (Soft Pink / Lavender tones that match Primary) -->
+    <color name="md_theme_light_secondary">#C2185B</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#FFD9E3</color>
+    <color name="md_theme_light_onSecondaryContainer">#3F0015</color>
+
+    <!-- Tertiary (Complement color – plum/rose) -->
+    <color name="md_theme_light_tertiary">#AD1457</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_tertiaryContainer">#FFD9E5</color>
+    <color name="md_theme_light_onTertiaryContainer">#3A0014</color>
+
+    <!-- Background / Surface -->
+    <color name="md_theme_light_background">#FFF7FA</color>
+    <color name="md_theme_light_onBackground">#1C1B1F</color>
+
+    <color name="md_theme_light_surface">#FFF7FA</color>
+    <color name="md_theme_light_onSurface">#1C1B1F</color>
+
+    <!-- Outline -->
+    <color name="md_theme_light_outline">#8A7480</color>
+
 </resources>
