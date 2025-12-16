@@ -62,12 +62,12 @@ private fun validateInputs() {
    val email = binding.etEmail.text.toString()
     val password = binding.etPassword.text.toString()
     if(email.isBlank()){
-        binding.etEmail.error = "Email cannot be empty"
+        binding.etEmail.error = "Invalid Email"
         binding.etEmail.requestFocus()
         return
     }
     if(password.isBlank()) {
-        binding.etPassword.error = "Password cannot be empty"
+        binding.etPassword.error = "Invalid Password"
         binding.etPassword.requestFocus()
         return
     }

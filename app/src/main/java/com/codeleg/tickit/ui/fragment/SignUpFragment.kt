@@ -59,28 +59,28 @@ class SignUpFragment : Fragment() {
         val confirmPassword = binding.etCmfPassword.text.toString()
 
         if (username.isBlank()) {
-            binding.etUsername.error = "Username cannot be empty"
+            binding.etUsername.error = "Invalid Username"
             binding.etUsername.requestFocus()
             return
         }
         if (email.isBlank()) {
-            binding.etEmail.error = "Email cannot be empty"
+            binding.etEmail.error = "Invalid Email"
             binding.etEmail.requestFocus()
             return
         }
         if (password.isBlank()) {
-            binding.etPassword.error = "Password cannot be empty"
+            binding.etPassword.error = "Invalid  Password"
             binding.etPassword.requestFocus()
             return
         }
         if (password != confirmPassword) {
-            binding.etCmfPassword.error = "Passwords do not match"
+            binding.etCmfPassword.error = "Passwords doesn't  match"
             binding.etCmfPassword.requestFocus()
             return
         }
 
         loadingDialog.show()
-        authVM.signUp(email, password) { isSuccessful, errorMsg ->
+        authVM.signUp(username, email, password) { isSuccessful, errorMsg ->
             loadingDialog.dismiss()
             if (isSuccessful) {
                 Toast.makeText(requireContext() , "Sign Up Successful! Please Login.", Toast.LENGTH_SHORT).show()
