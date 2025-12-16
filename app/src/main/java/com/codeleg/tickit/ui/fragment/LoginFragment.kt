@@ -1,6 +1,7 @@
 package com.codeleg.tickit.ui.fragment
 
 import android.app.Dialog
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,6 +11,7 @@ import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import com.codeleg.tickit.R
 import com.codeleg.tickit.databinding.FragmentLoginBinding
+import com.codeleg.tickit.ui.activity.MainActivity
 import com.codeleg.tickit.ui.viewmodel.AuthViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.platform.MaterialFade
@@ -78,6 +80,8 @@ private fun validateInputs() {
         loadingDialog.dismiss()
         if(isSuccessful){
             Toast.makeText(requireContext() , "Login Successful", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(requireContext() , MainActivity::class.java))
+            requireActivity().finish()
         } else {
             Snackbar.make(binding.root , errorMsg ?: "Login Failed", Snackbar.LENGTH_SHORT).show()
         }

@@ -53,6 +53,7 @@ class AuthViewModel: ViewModel() {
                     }
                 }
         }
+    fun isUserLoggedIn() =  firebaseAuth.currentUser != null
 
 
 

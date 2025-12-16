@@ -1,6 +1,7 @@
 package com.codeleg.tickit.ui.fragment
 
 import android.app.Dialog
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,6 +11,7 @@ import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import com.codeleg.tickit.R
 import com.codeleg.tickit.databinding.FragmentSignUpBinding
+import com.codeleg.tickit.ui.activity.MainActivity
 import com.codeleg.tickit.ui.viewmodel.AuthViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.platform.MaterialFade
@@ -83,7 +85,9 @@ class SignUpFragment : Fragment() {
         authVM.signUp(username, email, password) { isSuccessful, errorMsg ->
             loadingDialog.dismiss()
             if (isSuccessful) {
-                Toast.makeText(requireContext() , "Sign Up Successful! Please Login.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext() , "Sign Up Successful", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(requireActivity(), MainActivity::class.java))
+                requireActivity().finish()
             }else{
                 Snackbar.make(binding.root , errorMsg ?: "Sign Up Failed", Snackbar.LENGTH_LONG).show()
             }

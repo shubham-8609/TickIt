@@ -1,5 +1,6 @@
 package com.codeleg.tickit.ui.activity
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -20,6 +21,10 @@ class AuthActivity : AppCompatActivity() {
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
         manageInsets()
+        if (authVM.isUserLoggedIn()) {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+        }
         if(savedInstanceState == null){
             supportFragmentManager.beginTransaction().apply {
                 replace(binding.authContainer.id , LoginFragment())
