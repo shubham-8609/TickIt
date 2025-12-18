@@ -5,5 +5,6 @@ data class Todo(
     val title: String = "",
     val isCompleted: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
+    val priority : Int = 0
 )
