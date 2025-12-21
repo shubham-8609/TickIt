@@ -39,10 +39,21 @@ class HomeFragment : Fragment() {
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = todoAdapter
             };
+        binding.loadingBar.show()
+        binding.rvTodos.visibility = View.GONE
 
         mainVM.loadTodos(){ isCompleted , msg ->
-            if(isCompleted) Snackbar.make(binding.root ,"Todos loaded Successfully" , Snackbar.LENGTH_SHORT).show()
-            else Snackbar.make(binding.root , msg.toString() , Snackbar.LENGTH_SHORT).show()
+            if(isCompleted){
+                Snackbar.make(binding.root ,"Todos loaded Successfully" , Snackbar.LENGTH_SHORT).show()
+                binding.loadingBar.hide()
+                binding.rvTodos.visibility = View.VISIBLE
+            }
+            else {
+                Snackbar.make(binding.root , msg.toString() , Snackbar.LENGTH_SHORT).show()
+                binding.loadingBar.hide()
+
+            }
+
         }
 
 
