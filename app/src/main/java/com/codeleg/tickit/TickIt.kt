@@ -1,4 +1,12 @@
 package com.codeleg.tickit
 
-class TickIt {
+import android.app.Application
+import com.google.firebase.database.FirebaseDatabase
+
+class TickIt: Application() {
+    override fun onCreate() {
+        super.onCreate()
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true)
+        
+    }
 }

@@ -22,7 +22,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(R.layout.activity_main)
         manageInsets()
-        FirebaseDatabase.getInstance().setPersistenceEnabled(true)
      if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction().apply {
                 replace(binding.activityMainContainer.id, HomeFragment())
