@@ -17,26 +17,23 @@ class MainViewModel: ViewModel() {
     val uid = FirebaseAuth.getInstance().currentUser?.uid
     private var todosListener: ValueEventListener? = null
 
-    fun addTodo(todo: Todo , onResult: (Boolean,Todo? ,  String?) -> Unit) {
+    fun addTodo(todo: Todo , onResult: (Boolean ,  String?) -> Unit) {
         if(uid==null){
-            onResult(false, null,"User not logged in")
+            onResult(false,"User not logged in")
             return
         }
         val todosRef = firebaseDB.getReference("todos").child(uid)
         val todoId = todosRef.push().key?: run {
-            onResult(false, null,"Could not generate todo ID")
+            onResult(false,"Could not generate todo ID")
             return
         }
         val todoWithId = todo.copy(id = todoId)
         todosRef.child(todoId).setValue(todoWithId)
             .addOnSuccessListener {
-                // Update local list
-                val current = _allTodos.value.orEmpty()
-                _allTodos.value = current + todoWithId
-                onResult(true , todoWithId, null)
+                onResult(true , null)
             }
             .addOnFailureListener {
-                onResult(false, null  , it.localizedMessage)
+                onResult(false  , it.localizedMessage)
             }
     }
 

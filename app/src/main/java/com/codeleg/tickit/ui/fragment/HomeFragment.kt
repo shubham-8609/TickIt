@@ -69,7 +69,7 @@ class HomeFragment : Fragment() {
             return
         }
         val todo = Todo(title = title)
-        mainVM.addTodo(todo) { isSuccess, todoWithId, errorMsg ->
+        mainVM.addTodo(todo) { isSuccess, errorMsg ->
             if (isSuccess) {
                 binding.etAddTodo.text?.clear()
                 Snackbar.make(
