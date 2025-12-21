@@ -26,8 +26,7 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentHomeBinding.inflate(layoutInflater, container, false)
-
+        _binding = FragmentHomeBinding.inflate(layoutInflater, container, false);
         todoAdapter = TodoListAdapter(
                 onCheckedChange = { todo, isChecked ->
                     onItemCheckedChange(todo, isChecked)
@@ -35,24 +34,27 @@ class HomeFragment : Fragment() {
                 onItemClick = { todo ->
                     onItemDelete(todo)
                 }
-            )
+            );
             binding.rvTodos.apply {
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = todoAdapter
-            }
+            };
+
+        mainVM.loadTodos(){ isCompleted , msg ->
+            if(isCompleted) Snackbar.make(binding.root ,"Todos loaded Successfully" , Snackbar.LENGTH_SHORT).show()
+            else Snackbar.make(binding.root , msg.toString() , Snackbar.LENGTH_SHORT).show()
+        }
+
 
 
         binding.fabAddTodo.setOnClickListener {
             addNewTodo()
         }
-
         mainVM.allTodos.observe(viewLifecycleOwner){ todos ->
                 todoAdapter.submitList(todos)
         }
-
         return binding.root
     }
-
     override fun onDestroy() {
         super.onDestroy()
         _binding = null

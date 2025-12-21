@@ -10,6 +10,7 @@ import com.codeleg.tickit.R
 import com.codeleg.tickit.databinding.ActivityMainBinding
 import com.codeleg.tickit.ui.fragment.HomeFragment
 import com.codeleg.tickit.ui.viewmodel.MainViewModel
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.FirebaseDatabase
 import kotlin.getValue
 
@@ -27,7 +28,6 @@ class MainActivity : AppCompatActivity() {
                 replace(binding.activityMainContainer.id, HomeFragment())
             }.commit()
         }
-        mainVM.loadTodos()
     }
 
     private fun manageInsets() {
