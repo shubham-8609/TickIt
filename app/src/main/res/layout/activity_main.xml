@@ -27,7 +27,6 @@
             app:itemIconTint="?attr/colorOnSurface"
             app:itemTextColor="?attr/colorOnSurface"
             app:itemRippleColor="?attr/colorPrimary"
-            app:itemActiveIndicatorStyle="@style/Widget.Material3.BottomNavigationView"
             android:background="?attr/colorSurface" />
 
     </LinearLayout>

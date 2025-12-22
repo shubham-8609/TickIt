@@ -15,25 +15,25 @@ import com.codeleg.tickit.ui.viewmodel.MainViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.FirebaseDatabase
 import kotlin.getValue
-
 class MainActivity : AppCompatActivity() {
-    private val homeFragment = HomeFragment()
-    private val profileFragment = ProfileFragment()
-    private var activeFragment: Fragment = homeFragment
 
+    private lateinit var binding: ActivityMainBinding
     private val mainVM: MainViewModel by viewModels()
-    lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        // ✅ Correct ViewBinding usage
         binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         manageInsets()
+
+        // Load default fragment
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction().apply {
-                replace(binding.activityMainContainer.id, HomeFragment())
-            }.commit()
+            replaceFragment(HomeFragment(), "HOME")
         }
-        setupFragments()
+
         setupBottomNavigation()
     }
 
@@ -41,42 +41,30 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
     }
 
-
-    private fun setupFragments() {
-        supportFragmentManager.beginTransaction()
-            .add(R.id.activity_main_container, profileFragment, "PROFILE")
-            .hide(profileFragment)
-            .add(R.id.activity_main_container, homeFragment, "HOME")
-            .commit()
-
-        activeFragment = homeFragment
-    }
-
-    private fun switchFragment(target: Fragment) {
-        if (activeFragment == target) return
-
-        supportFragmentManager.beginTransaction()
-            .hide(activeFragment)
-            .show(target)
-            .commit()
-
-        activeFragment = target
-    }
-
-
     private fun setupBottomNavigation() {
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.option_home -> switchFragment(homeFragment)
-                R.id.option_profile -> switchFragment(profileFragment)
+                R.id.option_home -> {
+                    replaceFragment(HomeFragment(), "HOME")
+                    true
+                }
+                R.id.option_profile -> {
+                    replaceFragment(ProfileFragment(), "PROFILE")
+                    true
+                }
+                else -> false
             }
-            true
         }
     }
 
+    private fun replaceFragment(fragment: Fragment, tag: String) {
+        supportFragmentManager.beginTransaction()
+            .replace(binding.activityMainContainer.id, fragment, tag)
+            .commit()
+    }
 }

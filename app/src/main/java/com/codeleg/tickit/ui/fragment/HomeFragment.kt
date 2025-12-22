@@ -6,14 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.codeleg.tickit.database.model.Todo
 import com.codeleg.tickit.databinding.FragmentHomeBinding
 import com.codeleg.tickit.ui.adapter.TodoListAdapter
 import com.codeleg.tickit.ui.viewmodel.MainViewModel
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
     private val mainVM: MainViewModel by activityViewModels()
@@ -26,7 +24,7 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentHomeBinding.inflate(layoutInflater, container, false);
+        _binding = FragmentHomeBinding.inflate(layoutInflater, container, false)
         todoAdapter = TodoListAdapter(
                 onCheckedChange = { todo, isChecked ->
                     onItemCheckedChange(todo, isChecked)

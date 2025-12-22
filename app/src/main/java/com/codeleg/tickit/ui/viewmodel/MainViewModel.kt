@@ -54,6 +54,8 @@ class MainViewModel: ViewModel() {
         todosRef.addValueEventListener(todosListener!!)
         }
 
+    fun updateTodoComplete(){}
+
     fun clearTodosListener() {
         val currentUid = uid ?: return
         todosListener?.let {
