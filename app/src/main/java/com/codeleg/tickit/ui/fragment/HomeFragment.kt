@@ -59,7 +59,7 @@ class HomeFragment : Fragment() {
             searchJob?.cancel()
 
             searchJob = viewLifecycleOwner.lifecycleScope.launch {
-                delay(1000) // ⏱ 1 second debounce
+                delay(1000)
 
                 val query = text.toString().trim().lowercase()
 
@@ -109,10 +109,7 @@ class HomeFragment : Fragment() {
             binding.loadingBar.hide()
             binding.rvTodos.visibility = View.VISIBLE
 
-            showSnack(
-                if (isSuccess) "Todos loaded successfully"
-                else msg ?: "Failed to load todos"
-            )
+            if(!isSuccess) showSnack("Error loading todos: ${msg ?: "Unknown error"}")
         }
     }
 

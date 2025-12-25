@@ -1,4 +1,4 @@
-package com.codeleg.tickit.ui.fragment
+package com.codeleg.tickit.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 
