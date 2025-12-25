@@ -1,6 +1,5 @@
 package com.codeleg.tickit.ui.fragment
 
-import android.R
 import android.app.Dialog
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -8,7 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.codeleg.tickit.database.model.Todo
 import com.codeleg.tickit.databinding.DialogTodoDetailBinding
@@ -16,8 +17,10 @@ import com.codeleg.tickit.databinding.FragmentHomeBinding
 import com.codeleg.tickit.ui.adapter.TodoListAdapter
 import com.codeleg.tickit.ui.viewmodel.MainViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.dialog.MaterialDialogs
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -27,6 +30,8 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+    private var searchJob: Job? = null
+    private var fullTodoList: List<Todo> = emptyList()
 
     private lateinit var todoAdapter: TodoListAdapter
 
@@ -41,10 +46,33 @@ class HomeFragment : Fragment() {
         setupRecyclerView()
         observeTodos()
         loadTodos()
+        setUpSearchFeature()
 
         binding.fabAddTodo.setOnClickListener { addNewTodo() }
 
         return binding.root
+    }
+
+    private fun setUpSearchFeature() {
+        binding.etAddTodo.doOnTextChanged { text, _, _, _ ->
+
+            searchJob?.cancel()
+
+            searchJob = viewLifecycleOwner.lifecycleScope.launch {
+                delay(1000) // ⏱ 1 second debounce
+
+                val query = text.toString().trim().lowercase()
+
+                if (query.isEmpty()) {
+                    todoAdapter.submitList(fullTodoList)
+                } else {
+                    val filteredList = fullTodoList.filter { todo ->
+                        todo.title.lowercase().contains(query)
+                    }
+                    todoAdapter.submitList(filteredList)
+                }
+            }
+            }
     }
 
     override fun onDestroyView() {
@@ -68,6 +96,7 @@ class HomeFragment : Fragment() {
 
     private fun observeTodos() {
         mainVM.allTodos.observe(viewLifecycleOwner) {
+            fullTodoList = it
             todoAdapter.submitList(it)
         }
     }
