@@ -26,28 +26,28 @@ class HomeFragment : Fragment() {
     ): View? {
         _binding = FragmentHomeBinding.inflate(layoutInflater, container, false)
         todoAdapter = TodoListAdapter(
-                onCheckedChange = { todo, isChecked ->
-                    onItemCheckedChange(todo, isChecked)
-                },
-                onItemClick = { todo ->
-                    onItemDelete(todo)
-                }
-            );
-            binding.rvTodos.apply {
-                layoutManager = LinearLayoutManager(requireContext())
-                adapter = todoAdapter
-            };
+            onCheckedChange = { todo, isChecked ->
+                onItemCheckedChange(todo, isChecked)
+            },
+            onItemClick = { todo ->
+                onItemDelete(todo)
+            }
+        );
+        binding.rvTodos.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = todoAdapter
+        };
         binding.loadingBar.show()
         binding.rvTodos.visibility = View.GONE
 
-        mainVM.loadTodos(){ isCompleted , msg ->
-            if(isCompleted){
-                Snackbar.make(binding.root ,"Todos loaded Successfully" , Snackbar.LENGTH_SHORT).show()
+        mainVM.loadTodos() { isCompleted, msg ->
+            if (isCompleted) {
+                Snackbar.make(binding.root, "Todos loaded Successfully", Snackbar.LENGTH_SHORT)
+                    .show()
                 binding.loadingBar.hide()
                 binding.rvTodos.visibility = View.VISIBLE
-            }
-            else {
-                Snackbar.make(binding.root , msg.toString() , Snackbar.LENGTH_SHORT).show()
+            } else {
+                Snackbar.make(binding.root, msg.toString(), Snackbar.LENGTH_SHORT).show()
                 binding.loadingBar.hide()
 
             }
@@ -59,11 +59,12 @@ class HomeFragment : Fragment() {
         binding.fabAddTodo.setOnClickListener {
             addNewTodo()
         }
-        mainVM.allTodos.observe(viewLifecycleOwner){ todos ->
-                todoAdapter.submitList(todos)
+        mainVM.allTodos.observe(viewLifecycleOwner) { todos ->
+            todoAdapter.submitList(todos)
         }
         return binding.root
     }
+
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
@@ -96,10 +97,16 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun onItemCheckedChange(todo: Todo , isChecked: Boolean){
-
+    private fun onItemCheckedChange(todo: Todo, isChecked: Boolean) : Boolean {
+        mainVM.updateTodoComplete(todo.id , isChecked){isDone , msg ->
+            if(!isDone){
+                Snackbar.make(binding.root , msg?:"Error while updating." , Snackbar.LENGTH_SHORT).show()
+            }
+        }
+        return true
     }
-    private fun onItemDelete(todo: Todo){
+
+    private fun onItemDelete(todo: Todo) {
 
     }
 }

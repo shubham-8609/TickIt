@@ -9,7 +9,7 @@ import com.codeleg.tickit.database.model.Todo
 import com.codeleg.tickit.databinding.ItemTodoBinding
 
 class TodoListAdapter(
-    private val onCheckedChange: ((Todo, Boolean) -> Unit)? = null,
+    private val onCheckedChange: ((Todo, Boolean) -> Boolean),
     private val onItemClick: ((Todo) -> Unit)? = null
 ) : ListAdapter<Todo, TodoListAdapter.TodoViewHolder>(TodoDiffCallback()) {
 
@@ -36,10 +36,13 @@ class TodoListAdapter(
             tvPriority.text = todo.priority.toString()
 
             cbDone.setOnCheckedChangeListener(null)
-            cbDone.isChecked = todo.isCompleted
+            cbDone.isChecked = todo.completed
 
-            cbDone.setOnCheckedChangeListener { _, isChecked ->
-                onCheckedChange?.invoke(todo, isChecked)
+            cbDone.setOnCheckedChangeListener { button, isChecked ->
+                button.isEnabled = false
+                onCheckedChange(todo, isChecked)
+                button.isEnabled = true
+
             }
 
             root.setOnClickListener {
