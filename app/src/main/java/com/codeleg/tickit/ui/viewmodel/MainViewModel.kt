@@ -78,6 +78,25 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun deleteTodo(todoId: String , onResult: (Boolean, String?) ->Unit){
+        val todosRef = firebaseDB.getReference("todos").child(uid?:return onResult(false , "User not logged in")).child(todoId)
+        todosRef.removeValue()
+            .addOnSuccessListener { onResult(true , null) }
+            .addOnFailureListener { onResult(false , it.localizedMessage) }
+    }
+
+    fun updateTodo(todo: Todo , onResult: (Boolean, String?) ->Unit){
+        val todosRef = firebaseDB.getReference("todos").child(uid?:return onResult(false , "User not logged in")).child(todo.id)
+        val updates = mapOf(
+            "title" to todo.title,
+            "completed" to todo.completed,
+            "updatedAt" to System.currentTimeMillis(),
+            "priority" to todo.priority
+        )
+        todosRef.updateChildren(updates)
+            .addOnSuccessListener { onResult(true , null) }
+            .addOnFailureListener { onResult(false , it.localizedMessage) }
+    }
 
     override fun onCleared() {
         super.onCleared()
