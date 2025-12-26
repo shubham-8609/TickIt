@@ -102,10 +102,13 @@ class HomeFragment : Fragment() {
     }
 
     private fun loadTodos() {
+        if (_binding == null || !isAdded) return@loadTodos
+
         binding.loadingBar.show()
         binding.rvTodos.visibility = View.GONE
 
         mainVM.loadTodos { isSuccess, msg ->
+            if (_binding == null || !isAdded) return@loadTodos
             binding.loadingBar.hide()
             binding.rvTodos.visibility = View.VISIBLE
 

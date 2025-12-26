@@ -98,6 +98,18 @@ class MainViewModel : ViewModel() {
             .addOnFailureListener { onResult(false , it.localizedMessage) }
     }
 
+    fun getCurrentUser() = FirebaseAuth.getInstance().currentUser
+    fun getUsername() : String{
+        var username  = ""
+        firebaseDB.getReference("users").child(uid!!).get().addOnSuccessListener {
+             username = it.child("username").value.toString()
+        }
+        return username
+    }
+    fun logout() {
+        FirebaseAuth.getInstance().signOut()
+    }
+
     override fun onCleared() {
         super.onCleared()
         clearTodosListener()
