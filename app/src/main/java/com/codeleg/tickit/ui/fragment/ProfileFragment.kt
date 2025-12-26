@@ -35,7 +35,43 @@ class ProfileFragment : Fragment() {
 
         populateData()
         binding.btnLogout.setOnClickListener { logout() }
+        binding.itemDeleteTodos.setOnClickListener {
+            deleteAllTodos()
+        }
         return binding.root
+    }
+
+    private fun deleteAllTodos() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Delete All Todos")
+            .setMessage("Are you sure you want to delete all your todos? This action cannot be undone.")
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("Delete") { dialog, _ ->
+                dialog.dismiss()
+                mainVM.deleteAllTodos { success, errorMsg ->
+                    if (success) {
+                        populateData()
+                        MaterialAlertDialogBuilder(requireContext())
+                            .setTitle("Success")
+                            .setMessage("All todos have been deleted.")
+                            .setPositiveButton("OK") { successDialog, _ ->
+                                successDialog.dismiss()
+                            }
+                            .show()
+                    } else {
+                        MaterialAlertDialogBuilder(requireContext())
+                            .setTitle("Error")
+                            .setMessage(errorMsg ?: "Unknown error occurred")
+                            .setPositiveButton("OK") { errDialog, _ ->
+                                errDialog.dismiss()
+                            }
+                            .show()
+                    }
+                }
+            }
+            .show()
     }
 
     private fun logout() {

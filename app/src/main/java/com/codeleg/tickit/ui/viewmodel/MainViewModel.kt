@@ -110,6 +110,13 @@ class MainViewModel : ViewModel() {
         FirebaseAuth.getInstance().signOut()
     }
 
+    fun deleteAllTodos(onResult: (Boolean, String?) ->Unit){
+        val todosRef = firebaseDB.getReference("todos").child(uid?:return onResult(false , "User not logged in"))
+        todosRef.removeValue()
+            .addOnSuccessListener { onResult(true , null) }
+            .addOnFailureListener { onResult(false , it.localizedMessage) }
+    }
+
     override fun onCleared() {
         super.onCleared()
         clearTodosListener()
