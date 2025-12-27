@@ -1,10 +1,15 @@
 package com.codeleg.tickit.ui.viewmodel
 
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.codeleg.tickit.database.model.Todo
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -115,6 +120,37 @@ class MainViewModel : ViewModel() {
         todosRef.removeValue()
             .addOnSuccessListener { onResult(true , null) }
             .addOnFailureListener { onResult(false , it.localizedMessage) }
+    }
+
+    fun updatePass(newPass:String , oldPass:String , onResult: (Boolean, String?) ->Unit){
+        val user = getCurrentUser() ?: return onResult(false , "User not logged in")
+        val credential =  EmailAuthProvider
+            .getCredential(user.email!! , oldPass)
+        user.reauthenticate(credential)
+            .addOnSuccessListener {
+                user.updatePassword(newPass)
+                    .addOnSuccessListener { onResult(true , null) }
+                    .addOnFailureListener { onResult(false , mapFirebaseError(it)) }
+            }
+            .addOnFailureListener { onResult(false , mapFirebaseError(it)) }
+    }
+
+
+    private fun mapFirebaseError(e: Exception): String {
+        return when (e) {
+
+            is FirebaseAuthRecentLoginRequiredException ->
+                "Please log in again to change your password"
+
+            is FirebaseAuthWeakPasswordException ->
+                "New password must be at least 6 characters"
+
+            is FirebaseAuthInvalidCredentialsException ->
+                "Re-authentication failed. Please verify your password."
+
+            else ->
+                "Something went wrong. Please try again."
+        }
     }
 
     override fun onCleared() {

@@ -10,8 +10,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import com.codeleg.tickit.R
 import com.codeleg.tickit.databinding.FragmentProfileBinding
+import com.codeleg.tickit.databinding.LayoutUpdatePassBinding
 import com.codeleg.tickit.ui.activity.AuthActivity
 import com.codeleg.tickit.ui.viewmodel.MainViewModel
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.serialization.builtins.IntArraySerializer
 
@@ -38,7 +40,51 @@ class ProfileFragment : Fragment() {
         binding.itemDeleteTodos.setOnClickListener {
             deleteAllTodos()
         }
+        binding.itemUpdatePassword.setOnClickListener {
+            updatePassLogic()
+        }
         return binding.root
+    }
+
+    private fun updatePassLogic() {
+        val dialogBinding = LayoutUpdatePassBinding.inflate(layoutInflater)
+        val dialog = BottomSheetDialog(requireContext())
+        dialog.setContentView(dialogBinding.root)
+        dialogBinding.btnUpdatePassword.setOnClickListener {
+            val newPass = dialogBinding.etNewPassword.text.toString()
+            val oldPass = dialogBinding.etOldPassword.text.toString()
+            if (newPass.isEmpty() || oldPass.isEmpty()) {
+                dialogBinding.etNewPassword.error = "Fields cannot be empty"
+                return@setOnClickListener
+            }
+            if(newPass.length < 6){
+                dialogBinding.etNewPassword.error = "Password must be at least 6 characters long"
+                return@setOnClickListener
+            }
+            mainVM.updatePass(newPass, oldPass) { success, errorMsg ->
+                if (success) {
+                    dialog.dismiss()
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Success")
+                        .setMessage("Password updated successfully.")
+                        .setPositiveButton("OK") { successDialog, _ ->
+                            successDialog.dismiss()
+                        }
+                        .show()
+                } else {
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Error")
+                        .setMessage(errorMsg ?: "Unknown error occurred")
+                        .setPositiveButton("OK") { errDialog, _ ->
+                            errDialog.dismiss()
+                        }
+                        .show()
+                }
+            }
+
+
+        }
+        dialog.show()
     }
 
     private fun deleteAllTodos() {
@@ -75,8 +121,6 @@ class ProfileFragment : Fragment() {
     }
 
     private fun logout() {
-
-        // show alert dialog to confirm logout
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Logout")
             .setMessage("Are you sure you want to logout?")
