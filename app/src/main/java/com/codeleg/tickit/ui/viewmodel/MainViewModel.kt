@@ -153,6 +153,13 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun deleteAccount(onResult: (Boolean, String?) ->Unit){
+        val user = getCurrentUser() ?: return onResult(false , "User not logged in")
+        user.delete()
+            .addOnSuccessListener { onResult(true , null) }
+            .addOnFailureListener { onResult(false , mapFirebaseError(it)) }
+    }
+
     override fun onCleared() {
         super.onCleared()
         clearTodosListener()

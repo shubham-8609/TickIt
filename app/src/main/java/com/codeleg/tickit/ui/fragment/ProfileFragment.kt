@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import com.codeleg.tickit.R
 import com.codeleg.tickit.databinding.FragmentProfileBinding
@@ -43,7 +44,36 @@ class ProfileFragment : Fragment() {
         binding.itemUpdatePassword.setOnClickListener {
             updatePassLogic()
         }
+        binding.itemDeleteAccount.setOnClickListener { deleteAccountLogic() }
         return binding.root
+    }
+
+    private fun deleteAccountLogic() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Delete Account")
+            .setMessage("Are you sure you want to delete your account? This action cannot be undone.")
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("Delete") { dialog, _ ->
+                dialog.dismiss()
+                mainVM.deleteAccount { success, errorMsg ->
+                    if (success) {
+                        startActivity(Intent(requireActivity(), AuthActivity::class.java))
+                        Toast.makeText(requireContext() , "Account deleted successfully", Toast.LENGTH_SHORT).show()
+                        requireActivity().finish()
+                    } else {
+                        MaterialAlertDialogBuilder(requireContext())
+                            .setTitle("Error")
+                            .setMessage(errorMsg ?: "Unknown error occurred")
+                            .setPositiveButton("OK") { errDialog, _ ->
+                                errDialog.dismiss()
+                            }
+                            .show()
+                    }
+                }
+            }
+            .show()
     }
 
     private fun updatePassLogic() {
