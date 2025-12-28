@@ -3,101 +3,99 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
+    <data />
 
-    </data>
-
-
-    <ScrollView
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.fragment.HomeFragment">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-        <LinearLayout
-            android:id="@+id/linearLayout"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_150sdp"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-           >
-
-            <ImageView
-                android:layout_width="@dimen/_100sdp"
-                android:layout_height="@dimen/_100sdp"
-                android:contentDescription="@string/app_name"
-                android:scaleType="centerCrop"
-                android:src="@drawable/image_app" />
-
-            <com.google.android.material.textview.MaterialTextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="My Todos"
-                android:textSize="24sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:letterSpacing="0.03"
-                android:text="Manage your tasks efficiently" />
 
 
-        </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/linearLayout2"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_60sdp"
-            android:layout_marginTop="@dimen/_5sdp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="@dimen/_5sdp"
-            >
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/_10sdp"
-                android:hint="Add a new Todo">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etAddTodo"
-                    android:layout_width="@dimen/_240sdp"
-                    android:layout_height="wrap_content"
-                    android:hint="Add a new Todo" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fabAddTodo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/_10sdp"
-                android:contentDescription="Add Todo"
-                android:src="@android:drawable/ic_input_add"
-                app:backgroundTint="?attr/colorPrimary" />
-
-        </LinearLayout>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvTodos"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_400sdp"
-            android:layout_marginVertical="@dimen/_12sdp"
-            tools:listitem="@layout/item_todo"
-            android:visibility="gone"
-            tools:orientation="horizontal" />
-
-            <androidx.core.widget.ContentLoadingProgressBar
-                android:id="@+id/loading_bar"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/_370sdp"
-                style="?android:attr/progressBarStyleSmall"/>
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Large Header (this collapses visually into toolbar) -->
+                <LinearLayout
+                    android:id="@+id/linearLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="@dimen/_20sdp"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="My Todos"
+                        style="@style/TextAppearance.Material3.HeadlineLarge"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.03"
+                        android:text="Manage your tasks efficiently" />
+                </LinearLayout>
+
+                <!-- Add Todo Row -->
+                <LinearLayout
+                    android:id="@+id/linearLayout2"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_60sdp"
+                    android:layout_marginTop="@dimen/_5sdp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/_5sdp">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/_10sdp"
+                        >
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etAddTodo"
+                            android:layout_width="@dimen/_240sdp"
+                            android:layout_height="wrap_content"
+                            android:hint="Add or search todos" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/fabAddTodo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/_10sdp"
+                        android:contentDescription="Add Todo"
+                        android:src="@android:drawable/ic_input_add"
+                        app:backgroundTint="?attr/colorPrimary" />
+                </LinearLayout>
+
+                <!-- Todos List -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvTodos"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginVertical="@dimen/_12sdp"
+                    tools:listitem="@layout/item_todo"
+                    android:visibility="gone" />
 
 
-        </LinearLayout>
-    </ScrollView>
+                <!-- Loading -->
+                <androidx.core.widget.ContentLoadingProgressBar
+                    android:id="@+id/loading_bar"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_370sdp"
+                    style="?android:attr/progressBarStyleSmall" />
+
+            </LinearLayout>
+
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
 </layout>
