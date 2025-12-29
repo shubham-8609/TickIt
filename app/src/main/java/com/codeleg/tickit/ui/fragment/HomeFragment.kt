@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
 class HomeFragment : Fragment() {
 
     private val mainVM: MainViewModel by activityViewModels()
@@ -46,6 +47,7 @@ class HomeFragment : Fragment() {
         setupRecyclerView()
         observeTodos()
         loadTodos()
+        setupFiltering()
         setUpSearchFeature()
 
         binding.fabAddTodo.setOnClickListener { addNewTodo() }
@@ -53,13 +55,38 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
+    private fun setupFiltering() {
+        binding.chipGroupStatus.setOnCheckedStateChangeListener { _, checkedIds ->
+            when (checkedIds.firstOrNull()) {
+                binding.chipAll.id -> {
+                    todoAdapter.submitList(fullTodoList)
+                }
+
+                binding.chipIncomplete.id -> {
+                    val filteredList = fullTodoList.filter { todo ->
+                        !todo.completed
+                    }
+                    todoAdapter.submitList(filteredList)
+                }
+
+                binding.chipCompleted.id -> {
+                    val filteredList = fullTodoList.filter { todo ->
+                        todo.completed
+                    }
+                    todoAdapter.submitList(filteredList)
+                }
+            }
+        }
+    }
+
+
     private fun setUpSearchFeature() {
         binding.etAddTodo.doOnTextChanged { text, _, _, _ ->
 
             searchJob?.cancel()
-
             searchJob = viewLifecycleOwner.lifecycleScope.launch {
                 delay(700)
+                binding.chipAll.isChecked = true
 
                 val query = text.toString().trim().lowercase()
 
@@ -72,7 +99,7 @@ class HomeFragment : Fragment() {
                     todoAdapter.submitList(filteredList)
                 }
             }
-            }
+        }
     }
 
     override fun onDestroyView() {
@@ -102,7 +129,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun loadTodos() {
-        if (_binding == null || !isAdded) return@loadTodos
+        if (_binding == null || !isAdded) return
 
         binding.loadingBar.show()
         binding.rvTodos.visibility = View.GONE
@@ -112,7 +139,7 @@ class HomeFragment : Fragment() {
             binding.loadingBar.hide()
             binding.rvTodos.visibility = View.VISIBLE
 
-            if(!isSuccess) showSnack("Error loading todos: ${msg ?: "Unknown error"}")
+            if (!isSuccess) showSnack("Error loading todos: ${msg ?: "Unknown error"}")
         }
     }
 
