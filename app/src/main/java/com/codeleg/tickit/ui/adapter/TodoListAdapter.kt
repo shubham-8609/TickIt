@@ -1,5 +1,6 @@
 package com.codeleg.tickit.ui.adapter
 
+import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -34,9 +35,15 @@ class TodoListAdapter(
             tvTitle.text = todo.title
             tvCreatedAt.text = formatDate(todo.createdAt)
             tvPriority.text = todo.priority.toString()
-
-            cbDone.setOnCheckedChangeListener(null)
             cbDone.isChecked = todo.completed
+            cbDone.setOnCheckedChangeListener(null)
+            if (todo.completed) {
+                tvTitle.alpha = 0.7f
+                tvTitle.paintFlags = tvTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            } else {
+                tvTitle.alpha = 1f
+                tvTitle.paintFlags = tvTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            }
 
             cbDone.setOnCheckedChangeListener { button, isChecked ->
                 button.isEnabled = false
