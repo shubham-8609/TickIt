@@ -112,7 +112,8 @@ class HomeFragment : Fragment() {
     private fun setupRecyclerView() {
         todoAdapter = TodoListAdapter(
             onCheckedChange = ::onItemCheckedChange,
-            onItemClick = ::onItemClick
+            onItemClick = ::onItemClick,
+            onClickDelete = ::onClickDelete
         )
 
         binding.rvTodos.apply {
@@ -166,11 +167,21 @@ class HomeFragment : Fragment() {
         mainVM.updateTodoComplete(todo.id, isChecked) { isDone, msg ->
             if (!isDone) showSnack(msg ?: "Error updating todo")
         }
+        binding.chipAll.isChecked = true
         return true
     }
 
     private fun onItemClick(todo: Todo) {
         showDetailDialog(todo)
+    }
+
+    private fun onClickDelete(todo: Todo) {
+        mainVM.deleteTodo(todo.id) { isDeleted, msg ->
+            showSnack(
+                if (isDeleted) "Todo deleted successfully"
+                else msg ?: "Error deleting todo"
+            )
+        }
     }
 
     // -------------------- DIALOG --------------------

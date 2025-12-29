@@ -11,7 +11,8 @@ import com.codeleg.tickit.databinding.ItemTodoBinding
 
 class TodoListAdapter(
     private val onCheckedChange: ((Todo, Boolean) -> Boolean),
-    private val onItemClick: ((Todo) -> Unit)? = null
+    private val onItemClick: ((Todo) -> Unit),
+    private val onClickDelete: ((Todo) -> Unit)
 ) : ListAdapter<Todo, TodoListAdapter.TodoViewHolder>(TodoDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodoViewHolder {
@@ -45,6 +46,9 @@ class TodoListAdapter(
                 tvTitle.paintFlags = tvTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
             }
 
+            btnDelete.setOnClickListener {
+                onClickDelete.invoke(todo)
+            }
             cbDone.setOnCheckedChangeListener { button, isChecked ->
                 button.isEnabled = false
                 onCheckedChange(todo, isChecked)
