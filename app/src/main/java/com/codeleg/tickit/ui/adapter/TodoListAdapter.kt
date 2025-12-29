@@ -33,11 +33,11 @@ class TodoListAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(todo: Todo) = with(binding) {
+            cbDone.setOnCheckedChangeListener(null)
             tvTitle.text = todo.title
             tvCreatedAt.text = formatDate(todo.createdAt)
             tvPriority.text = todo.priority.toString()
             cbDone.isChecked = todo.completed
-            cbDone.setOnCheckedChangeListener(null)
             if (todo.completed) {
                 tvTitle.alpha = 0.7f
                 tvTitle.paintFlags = tvTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
@@ -46,18 +46,15 @@ class TodoListAdapter(
                 tvTitle.paintFlags = tvTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
             }
 
+            cbDone.setOnCheckedChangeListener { button, isChecked ->
+                onCheckedChange(todo, isChecked)
+            }
             btnDelete.setOnClickListener {
                 onClickDelete.invoke(todo)
             }
-            cbDone.setOnCheckedChangeListener { button, isChecked ->
-                button.isEnabled = false
-                onCheckedChange(todo, isChecked)
-                button.isEnabled = true
-
-            }
 
             root.setOnClickListener {
-                onItemClick?.invoke(todo)
+                onItemClick.invoke(todo)
             }
         }
 
