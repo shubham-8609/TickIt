@@ -59,7 +59,7 @@ class HomeFragment : Fragment() {
             searchJob?.cancel()
 
             searchJob = viewLifecycleOwner.lifecycleScope.launch {
-                delay(1000)
+                delay(700)
 
                 val query = text.toString().trim().lowercase()
 
