@@ -21,6 +21,9 @@ class MainViewModel : ViewModel() {
     val allTodos: LiveData<List<Todo>> get() = _allTodos
     val uid = FirebaseAuth.getInstance().currentUser?.uid
     private var todosListener: ValueEventListener? = null
+    private val _username = MutableLiveData<String>()
+    val username: LiveData<String> = _username
+
 
     fun addTodo(todo: Todo, onResult: (Boolean, String?) -> Unit) {
         if (uid == null) {
@@ -104,12 +107,10 @@ class MainViewModel : ViewModel() {
     }
 
     fun getCurrentUser() = FirebaseAuth.getInstance().currentUser
-    fun getUsername() : String{
-        var username  = ""
+    fun loadUsername(){
         firebaseDB.getReference("users").child(uid!!).get().addOnSuccessListener {
-             username = it.child("username").value.toString()
+            _username.value = it.child("username").value?.toString() ?: ""
         }
-        return username
     }
     fun logout() {
         FirebaseAuth.getInstance().signOut()

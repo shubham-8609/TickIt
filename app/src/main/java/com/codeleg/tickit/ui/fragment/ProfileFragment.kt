@@ -37,6 +37,7 @@ class ProfileFragment : Fragment() {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
 
         populateData()
+        mainVM.loadUsername()
         binding.btnLogout.setOnClickListener { logout() }
         binding.itemDeleteTodos.setOnClickListener {
             deleteAllTodos()
@@ -169,9 +170,10 @@ class ProfileFragment : Fragment() {
     }
 
     private fun populateData() {
-        val username = mainVM.getUsername()
+        mainVM.username.observe(viewLifecycleOwner) { username ->
+            binding.tvUsername.text = username
+        }
         val user = mainVM.getCurrentUser()
-        binding.tvUsername.text = username
         binding.tvEmail.text = user?.email ?: "No Email"
     }
 

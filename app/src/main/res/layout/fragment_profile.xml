@@ -36,6 +36,7 @@
                         android:layout_width="64dp"
                         android:layout_height="64dp"
                         android:src="@drawable/ic_profile"
+                        android:tint="?attr/colorPrimary"
                         app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
                         android:backgroundTint="?attr/colorPrimaryContainer"
                         android:padding="16dp" />
@@ -52,8 +53,8 @@
                             android:id="@+id/tvUsername"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Shubham"
-                            android:textAppearance="?attr/textAppearanceTitleLarge" />
+                            android:text="Username"
+                             />
 
                         <TextView
                             android:id="@+id/tvEmail"

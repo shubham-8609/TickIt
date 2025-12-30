@@ -189,7 +189,10 @@ class HomeFragment : Fragment() {
     private fun onClickDelete(todo: Todo) {
         mainVM.deleteTodo(todo.id) { isDeleted, msg ->
             showSnack(
-                if (isDeleted) "Todo deleted successfully"
+                if (isDeleted) {
+                    binding.chipAll.isChecked = true
+                    "Todo deleted successfully"
+                }
                 else msg ?: "Error deleting todo"
             )
         }
