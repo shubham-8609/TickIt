@@ -158,6 +158,7 @@ class MainViewModel : ViewModel() {
         user.delete()
             .addOnSuccessListener { onResult(true , null) }
             .addOnFailureListener { onResult(false , mapFirebaseError(it)) }
+        firebaseDB.getReference("users").child(uid!!).removeValue()
     }
 
     override fun onCleared() {
