@@ -46,9 +46,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Buy groceries"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="19sp"
+                    android:textStyle="bold" />
 
                 <!-- Subtitle -->
                 <LinearLayout
@@ -61,7 +61,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Today"
-                        android:textSize="15sp"
+                        android:textSize="12sp"
+                        android:textStyle="italic"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginTop="2dp" />
 
@@ -70,7 +71,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="• High priority"
-                        android:textSize="15sp"
+                        android:textStyle="italic"
+                        android:textSize="12sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginTop="2dp" />
                 </LinearLayout>

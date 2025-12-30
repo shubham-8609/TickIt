@@ -123,6 +123,17 @@
                     android:visibility="gone" />
 
 
+                <ImageView
+                    android:id="@+id/imgNoTodos"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/no_todos_img"
+                    android:visibility="gone"
+                    android:contentDescription="No Todos Image" />
+
+
                 <!-- Loading -->
                 <androidx.core.widget.ContentLoadingProgressBar
                     android:id="@+id/loading_bar"

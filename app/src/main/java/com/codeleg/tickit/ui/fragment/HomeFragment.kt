@@ -125,7 +125,18 @@ class HomeFragment : Fragment() {
     private fun observeTodos() {
         mainVM.allTodos.observe(viewLifecycleOwner) {
             fullTodoList = it
+            showImage()
             todoAdapter.submitList(it)
+        }
+    }
+
+    private fun showImage(){
+        if(fullTodoList.isEmpty()) {
+            binding.rvTodos.visibility = View.GONE
+            binding.imgNoTodos.visibility = View.VISIBLE
+        } else {
+            binding.imgNoTodos.visibility = View.GONE
+            binding.rvTodos.visibility = View.VISIBLE
         }
     }
 
