@@ -3,58 +3,81 @@ package com.codeleg.tickit.ui.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.tasks.await
 
-class AuthViewModel: ViewModel() {
+class AuthViewModel : ViewModel() {
 
-    val firebaseAuth by lazy { FirebaseAuth.getInstance() }
-    val fireBaseDB by lazy { FirebaseDatabase.getInstance().reference }
-    fun signUp(
+    private val firebaseAuth = FirebaseAuth.getInstance()
+    private val firebaseDB = FirebaseDatabase.getInstance().reference
+
+    suspend fun signUp(
         username: String,
         email: String,
-        password: String,
-        onResult: (Boolean, String?) -> Unit
-    ) {
-        firebaseAuth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
+        password: String
+    ): Result<Unit> {
+        return try {
+            val authResult = firebaseAuth
+                .createUserWithEmailAndPassword(email, password)
+                .await()
 
-                    val uid = task.result.user?.uid
-                    val userData = mapOf(
-                        "username" to username,
-                        "email" to email,
-                        "createdAt" to System.currentTimeMillis()
-                    )
-                    if (uid != null) {
-                        fireBaseDB.child("users").child(uid).setValue(userData)
-                            .addOnCompleteListener {
-                                if (!it.isSuccessful) {
-                                    Log.d(
-                                        "AuthViewModel",
-                                        "Error saving user data: ${it.exception?.localizedMessage}"
-                                    )
-                                }
-                            }
-                        onResult(true, null)
-                    } else {
-                        onResult(false, task.exception?.localizedMessage)
-                    }
-                }
-            }
+            val uid = authResult.user?.uid
+                ?: return Result.failure(Exception("User ID not found"))
+
+            val userData = mapOf(
+                "username" to username,
+                "email" to email,
+                "createdAt" to System.currentTimeMillis()
+            )
+
+            firebaseDB.child("users")
+                .child(uid)
+                .setValue(userData)
+                .await()
+
+            Result.success(Unit)
+
+        } catch (e: Exception) {
+            Result.failure(Exception(mapFirebaseError(e)))
+        }
     }
 
-        fun login(email: String, password: String, onResult: (Boolean, String?) -> Unit) {
-            firebaseAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        onResult(true, null)
-                    } else {
-                        onResult(false, task.exception?.localizedMessage)
-                    }
-                }
+    suspend fun login(
+        email: String,
+        password: String
+    ): Result<Unit> {
+        return try {
+            firebaseAuth
+                .signInWithEmailAndPassword(email, password)
+                .await()
+
+            Result.success(Unit)
+
+        } catch (e: Exception) {
+            Result.failure(Exception(mapFirebaseError(e)))
         }
-    fun isUserLoggedIn() =  firebaseAuth.currentUser != null
+    }
 
 
+    fun mapFirebaseError(e: Throwable): String {
+        return when (e) {
+            is FirebaseAuthInvalidCredentialsException ->
+                "Invalid email or password"
 
+            is FirebaseAuthUserCollisionException ->
+                "Email already exists"
+
+            is FirebaseAuthWeakPasswordException ->
+                "Password is too weak"
+
+            else -> e.localizedMessage ?: "Something went wrong"
+        }
+    }
+
+
+    fun isUserLoggedIn(): Boolean =
+        firebaseAuth.currentUser != null
 }

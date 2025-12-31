@@ -9,12 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.codeleg.tickit.R
 import com.codeleg.tickit.databinding.FragmentLoginBinding
 import com.codeleg.tickit.ui.activity.MainActivity
 import com.codeleg.tickit.ui.viewmodel.AuthViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.platform.MaterialFade
+import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment() {
 
@@ -75,19 +77,18 @@ private fun validateInputs() {
     }
 
     loadingDialog.show()
-    authVM.login(email, password) { isSuccessful, errorMsg ->
 
+    lifecycleScope.launch {
+        val result = authVM.login(email, password)
         loadingDialog.dismiss()
-        if(isSuccessful){
+        result.onSuccess {
             Toast.makeText(requireContext() , "Login Successful", Toast.LENGTH_SHORT).show()
             startActivity(Intent(requireContext() , MainActivity::class.java))
             requireActivity().finish()
-        } else {
-            Snackbar.make(binding.root , errorMsg ?: "Login Failed", Snackbar.LENGTH_SHORT).show()
+        }
+        result.onFailure { exception ->
+            Snackbar.make(binding.root , exception.message ?: "Login Failed", Snackbar.LENGTH_SHORT).show()
         }
     }
-
-
-
 }
 }

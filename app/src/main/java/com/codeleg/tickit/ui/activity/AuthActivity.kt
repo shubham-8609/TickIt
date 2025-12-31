@@ -10,6 +10,8 @@ import com.codeleg.tickit.databinding.ActivityAuthBinding
 import com.codeleg.tickit.ui.fragment.LoginFragment
 import com.codeleg.tickit.ui.viewmodel.AuthViewModel
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 
 class AuthActivity : AppCompatActivity() {
@@ -20,15 +22,17 @@ class AuthActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        lifecycleScope.launch {
         manageInsets()
-        if (authVM.isUserLoggedIn()) {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
-        }
         if(savedInstanceState == null){
             supportFragmentManager.beginTransaction().apply {
                 replace(binding.authContainer.id , LoginFragment())
             }.commit()
+        }
+        }
+        if (authVM.isUserLoggedIn()) {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
         }
     }
     private fun manageInsets() {

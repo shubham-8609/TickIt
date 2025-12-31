@@ -9,12 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.codeleg.tickit.R
 import com.codeleg.tickit.databinding.FragmentSignUpBinding
 import com.codeleg.tickit.ui.activity.MainActivity
 import com.codeleg.tickit.ui.viewmodel.AuthViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.platform.MaterialFade
+import kotlinx.coroutines.launch
 
 class SignUpFragment : Fragment() {
 
@@ -82,16 +84,20 @@ class SignUpFragment : Fragment() {
         }
 
         loadingDialog.show()
-        authVM.signUp(username, email, password) { isSuccessful, errorMsg ->
+        lifecycleScope.launch {
+            val result = authVM.signUp(username, email, password)
             loadingDialog.dismiss()
-            if (isSuccessful) {
-                Toast.makeText(requireContext() , "Sign Up Successful", Toast.LENGTH_SHORT).show()
+            if (result.isSuccess) {
+                Toast.makeText(requireContext(), "Sign Up Successful", Toast.LENGTH_SHORT).show()
                 startActivity(Intent(requireActivity(), MainActivity::class.java))
                 requireActivity().finish()
-            }else{
-                Snackbar.make(binding.root , errorMsg ?: "Sign Up Failed", Snackbar.LENGTH_LONG).show()
+            } else {
+                Snackbar.make(
+                    binding.root,
+                    result.exceptionOrNull()?.message ?: "Sign Up Failed",
+                    Snackbar.LENGTH_LONG
+                ).show()
             }
-
         }
 
     }
