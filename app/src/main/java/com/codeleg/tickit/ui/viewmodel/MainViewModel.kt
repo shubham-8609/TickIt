@@ -14,44 +14,43 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.tasks.await
 
 class MainViewModel : ViewModel() {
     val firebaseDB by lazy { FirebaseDatabase.getInstance() }
     private val _allTodos = MutableLiveData<List<Todo>>()
     val allTodos: LiveData<List<Todo>> get() = _allTodos
-    val uid = FirebaseAuth.getInstance().currentUser?.uid
+    private val uid: String? get() = FirebaseAuth.getInstance().currentUser?.uid
     private var todosListener: ValueEventListener? = null
     private val _username = MutableLiveData<String>()
     val username: LiveData<String> = _username
 
 
-    fun addTodo(todo: Todo, onResult: (Boolean, String?) -> Unit) {
-        if (uid == null) {
-            onResult(false, "User not logged in")
-            return
+
+    suspend fun addTodo(todo: Todo): Result<Unit> {
+        val currentUid = uid ?: return Result.failure(Exception("User not logged in"))
+        return try {
+            val todosRef = firebaseDB.getReference("todos").child(currentUid)
+            val todoId = todosRef.push().key
+                ?: return Result.failure(Exception("Could not generate todo ID"))
+
+            val todoWithId = todo.copy(id = todoId)
+
+            todosRef.child(todoId).setValue(todoWithId).await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
-        val todosRef = firebaseDB.getReference("todos").child(uid)
-        val todoId = todosRef.push().key ?: run {
-            onResult(false, "Could not generate todo ID")
-            return
-        }
-        val todoWithId = todo.copy(id = todoId)
-        todosRef.child(todoId).setValue(todoWithId)
-            .addOnSuccessListener {
-                onResult(true, null)
-            }
-            .addOnFailureListener {
-                onResult(false, it.localizedMessage)
-            }
     }
 
     fun loadTodos(onComplete: (Boolean, String?) -> Unit) {
+        val currentUid = uid ?: return onComplete(false, "User not logged in")
         val todosRef =
             firebaseDB.getReference("todos").child(uid ?: return).orderByChild("createdAt")
         todosListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val todos = snapshot.children.mapNotNull { it.getValue(Todo::class.java) }
-                _allTodos.value = todos
+                _allTodos.value =snapshot.children.mapNotNull { it.getValue(Todo::class.java) }
                 onComplete(true, null)
             }
 
@@ -63,17 +62,28 @@ class MainViewModel : ViewModel() {
         todosRef.addValueEventListener(todosListener!!)
     }
 
-    fun updateTodoComplete(todoId: String , isChecked: Boolean , onResult: (Boolean, String?) -> Unit){
-        val todosRef = firebaseDB.getReference("todos").child(uid?:return onResult(false , "User not logged in")).child(todoId)
-        val updates = mapOf(
-            "completed" to isChecked,
-            "updatedAt" to System.currentTimeMillis()
-        )
-        todosRef.updateChildren(updates)
-            .addOnSuccessListener { onResult(true , null) }
-            .addOnFailureListener { onResult(false , it.localizedMessage
-            ) }
+    suspend fun updateTodoComplete(
+        todoId: String,
+        isChecked: Boolean
+    ): Result<Unit> {
+        val currentUid = uid ?: return Result.failure(Exception("User not logged in"))
 
+        return try {
+            val updates = mapOf(
+                "completed" to isChecked,
+                "updatedAt" to System.currentTimeMillis()
+            )
+
+            firebaseDB.getReference("todos")
+                .child(currentUid)
+                .child(todoId)
+                .updateChildren(updates)
+                .await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     fun clearTodosListener() {
@@ -86,15 +96,17 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun deleteTodo(todoId: String , onResult: (Boolean, String?) ->Unit){
-        val todosRef = firebaseDB.getReference("todos").child(uid?:return onResult(false , "User not logged in")).child(todoId)
+    fun deleteTodo(todoId: String, onResult: (Boolean, String?) -> Unit) {
+        val todosRef = firebaseDB.getReference("todos")
+            .child(uid ?: return onResult(false, "User not logged in")).child(todoId)
         todosRef.removeValue()
-            .addOnSuccessListener { onResult(true , null) }
-            .addOnFailureListener { onResult(false , it.localizedMessage) }
+            .addOnSuccessListener { onResult(true, null) }
+            .addOnFailureListener { onResult(false, it.localizedMessage) }
     }
 
-    fun updateTodo(todo: Todo , onResult: (Boolean, String?) ->Unit){
-        val todosRef = firebaseDB.getReference("todos").child(uid?:return onResult(false , "User not logged in")).child(todo.id)
+    fun updateTodo(todo: Todo, onResult: (Boolean, String?) -> Unit) {
+        val todosRef = firebaseDB.getReference("todos")
+            .child(uid ?: return onResult(false, "User not logged in")).child(todo.id)
         val updates = mapOf(
             "title" to todo.title,
             "completed" to todo.completed,
@@ -102,38 +114,47 @@ class MainViewModel : ViewModel() {
             "priority" to todo.priority
         )
         todosRef.updateChildren(updates)
-            .addOnSuccessListener { onResult(true , null) }
-            .addOnFailureListener { onResult(false , it.localizedMessage) }
+            .addOnSuccessListener { onResult(true, null) }
+            .addOnFailureListener { onResult(false, it.localizedMessage) }
     }
 
     fun getCurrentUser() = FirebaseAuth.getInstance().currentUser
-    fun loadUsername(){
-        firebaseDB.getReference("users").child(uid!!).get().addOnSuccessListener {
+    fun loadUsername() {
+        firebaseDB.getReference("users").child(uid ?: return).get().addOnSuccessListener {
             _username.value = it.child("username").value?.toString() ?: ""
         }
     }
+
     fun logout() {
         FirebaseAuth.getInstance().signOut()
     }
 
-    fun deleteAllTodos(onResult: (Boolean, String?) ->Unit){
-        val todosRef = firebaseDB.getReference("todos").child(uid?:return onResult(false , "User not logged in"))
+    fun deleteAllTodos(onResult: (Boolean, String?) -> Unit) {
+        val todosRef = firebaseDB.getReference("todos")
+            .child(uid ?: return onResult(false, "User not logged in"))
         todosRef.removeValue()
-            .addOnSuccessListener { onResult(true , null) }
-            .addOnFailureListener { onResult(false , it.localizedMessage) }
+            .addOnSuccessListener { onResult(true, null) }
+            .addOnFailureListener { onResult(false, it.localizedMessage) }
     }
 
-    fun updatePass(newPass:String , oldPass:String , onResult: (Boolean, String?) ->Unit){
-        val user = getCurrentUser() ?: return onResult(false , "User not logged in")
-        val credential =  EmailAuthProvider
-            .getCredential(user.email!! , oldPass)
-        user.reauthenticate(credential)
-            .addOnSuccessListener {
-                user.updatePassword(newPass)
-                    .addOnSuccessListener { onResult(true , null) }
-                    .addOnFailureListener { onResult(false , mapFirebaseError(it)) }
-            }
-            .addOnFailureListener { onResult(false , mapFirebaseError(it)) }
+    suspend fun udpatePass(
+        oldPass: String,
+        newPass: String
+    ): Result<Unit> {
+        val user = getCurrentUser()
+            ?: return Result.failure(Exception("User not logged in"))
+
+        return try {
+            val credential = EmailAuthProvider
+                .getCredential(user.email!!, oldPass)
+
+            user.reauthenticate(credential).await()
+            user.updatePassword(newPass).await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
 
@@ -154,12 +175,21 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun deleteAccount(onResult: (Boolean, String?) ->Unit){
-        val user = getCurrentUser() ?: return onResult(false , "User not logged in")
-        user.delete()
-            .addOnSuccessListener { onResult(true , null) }
-            .addOnFailureListener { onResult(false , mapFirebaseError(it)) }
-        firebaseDB.getReference("users").child(uid!!).removeValue()
+
+    suspend fun deleteAccount(): Result<Unit> {
+        val user = getCurrentUser()
+            ?: return Result.failure(Exception("User not logged in"))
+        val currentUid = uid ?: return Result.failure(Exception("User not logged in"))
+
+        return try {
+            firebaseDB.getReference("users").child(currentUid).removeValue().await()
+            firebaseDB.getReference("todos").child(currentUid).removeValue().await()
+            user.delete().await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     override fun onCleared() {

@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.codeleg.tickit.R
 import com.codeleg.tickit.databinding.FragmentProfileBinding
 import com.codeleg.tickit.databinding.LayoutUpdatePassBinding
@@ -16,6 +17,7 @@ import com.codeleg.tickit.ui.activity.AuthActivity
 import com.codeleg.tickit.ui.viewmodel.MainViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.launch
 import kotlinx.serialization.builtins.IntArraySerializer
 
 class ProfileFragment : Fragment() {
@@ -58,15 +60,16 @@ class ProfileFragment : Fragment() {
             }
             .setPositiveButton("Delete") { dialog, _ ->
                 dialog.dismiss()
-                mainVM.deleteAccount { success, errorMsg ->
-                    if (success) {
+                lifecycleScope.launch {
+                    val result = mainVM.deleteAccount()
+                    if (result.isSuccess) {
                         startActivity(Intent(requireActivity(), AuthActivity::class.java))
                         Toast.makeText(requireContext() , "Account deleted successfully", Toast.LENGTH_SHORT).show()
                         requireActivity().finish()
                     } else {
                         MaterialAlertDialogBuilder(requireContext())
                             .setTitle("Error")
-                            .setMessage(errorMsg ?: "Unknown error occurred")
+                            .setMessage(result.exceptionOrNull()?.localizedMessage ?: "Unknown error occurred")
                             .setPositiveButton("OK") { errDialog, _ ->
                                 errDialog.dismiss()
                             }
@@ -92,8 +95,9 @@ class ProfileFragment : Fragment() {
                 dialogBinding.etNewPassword.error = "Password must be at least 6 characters long"
                 return@setOnClickListener
             }
-            mainVM.updatePass(newPass, oldPass) { success, errorMsg ->
-                if (success) {
+            lifecycleScope.launch {
+                val result = mainVM.udpatePass(oldPass, newPass)
+                if (result.isSuccess) {
                     dialog.dismiss()
                     MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Success")
@@ -105,7 +109,7 @@ class ProfileFragment : Fragment() {
                 } else {
                     MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Error")
-                        .setMessage(errorMsg ?: "Unknown error occurred")
+                        .setMessage(result.exceptionOrNull()?.localizedMessage ?: "Unknown error occurred")
                         .setPositiveButton("OK") { errDialog, _ ->
                             errDialog.dismiss()
                         }

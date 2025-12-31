@@ -124,9 +124,11 @@ class HomeFragment : Fragment() {
 
     private fun observeTodos() {
         mainVM.allTodos.observe(viewLifecycleOwner) {
+            lifecycleScope.launch {
             fullTodoList = it
-            showImage()
             todoAdapter.submitList(it)
+            }
+            showImage()
         }
     }
 
@@ -164,21 +166,27 @@ class HomeFragment : Fragment() {
             return
         }
 
-        mainVM.addTodo(Todo(title = title)) { isSuccess, msg ->
-            if (isSuccess) binding.etAddTodo.text?.clear()
-
-            showSnack(
-                if (isSuccess) "Todo added successfully"
-                else msg ?: "Error adding todo"
-            )
+        lifecycleScope.launch {
+            val result = mainVM.addTodo(Todo(title = title))
+            result.onSuccess {
+                binding.etAddTodo.text?.clear()
+                showSnack("Todo added successfully")
+            }.onFailure { e ->
+                showSnack("Error adding todo: ${e.localizedMessage}")
+            }
         }
     }
 
     private fun onItemCheckedChange(todo: Todo, isChecked: Boolean): Boolean {
-        mainVM.updateTodoComplete(todo.id, isChecked) { isDone, msg ->
-            if (!isDone) showSnack(msg ?: "Error updating todo")
+
+        lifecycleScope.launch {
+            val result = mainVM.updateTodoComplete(todo.id, isChecked)
+            result.onSuccess {
+                binding.chipAll.isChecked = true
+            }.onFailure { e ->
+                showSnack("Error updating todo: ${e.localizedMessage}")
+            }
         }
-        binding.chipAll.isChecked = true
         return true
     }
 
