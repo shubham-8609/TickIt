@@ -92,12 +92,12 @@
                 <!-- Forgot Password -->
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvForgotPassword"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Forgot password?"
                     android:textSize="13sp"
                     android:textColor="?attr/colorPrimary"
-                    android:gravity="end"
+                    android:layout_gravity="end"
                     android:layout_marginBottom="@dimen/_19sdp"
                     android:clickable="true"
                     android:focusable="true" />
