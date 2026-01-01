@@ -45,6 +45,19 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    suspend fun sendPassResetLink(email: String): Result<Unit> {
+        return try {
+            firebaseAuth
+                .sendPasswordResetEmail(email)
+                .await()
+
+            Result.success(Unit)
+
+        } catch (e: Exception) {
+            Result.failure(Exception(mapFirebaseError(e)))
+        }
+    }
+
     suspend fun login(
         email: String,
         password: String
