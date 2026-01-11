@@ -49,6 +49,7 @@ class LoginFragment : Fragment() {
             val dialogBinding = ForgetPassLayoutBinding.inflate(layoutInflater)
             val dialog = BottomSheetDialog(requireContext())
             dialog.setContentView(dialogBinding.root)
+            dialogBinding.btnCancel.setOnClickListener { dialog.dismiss() }
             dialogBinding.btnSend.setOnClickListener {
                 val email = dialogBinding.etEmail.text.toString()
                 if (email.isBlank()) {
