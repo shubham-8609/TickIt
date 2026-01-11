@@ -2,47 +2,57 @@ package com.codeleg.tickit.ui.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.codeleg.tickit.utils.AuthUiState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class AuthViewModel : ViewModel() {
 
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val firebaseDB = FirebaseDatabase.getInstance().reference
+    private val _authState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
+    val authState: StateFlow<AuthUiState> = _authState
 
-    suspend fun signUp(
+     fun signUp(
         username: String,
         email: String,
         password: String
-    ): Result<Unit> {
-        return try {
-            val authResult = firebaseAuth
-                .createUserWithEmailAndPassword(email, password)
-                .await()
+    ) {
+        viewModelScope.launch {
+            _authState.value = AuthUiState.Loading
 
-            val uid = authResult.user?.uid
-                ?: return Result.failure(Exception("User ID not found"))
+            try {
+                val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password)
+                    .await()
+                val uid = authResult.user?.uid ?: throw Exception("User ID not found")
+                val userData = mapOf(
+                    "username" to username,
+                    "email" to email,
+                    "createdAt" to System.currentTimeMillis()
+                )
 
-            val userData = mapOf(
-                "username" to username,
-                "email" to email,
-                "createdAt" to System.currentTimeMillis()
-            )
+                firebaseDB.child("users")
+                    .child(uid)
+                    .setValue(userData)
+                    .await()
 
-            firebaseDB.child("users")
-                .child(uid)
-                .setValue(userData)
-                .await()
+                _authState.value = AuthUiState.Success
 
-            Result.success(Unit)
-
-        } catch (e: Exception) {
-            Result.failure(Exception(mapFirebaseError(e)))
+            }
+            catch (e: Exception) {
+                _authState.value =
+                    AuthUiState.Error(mapFirebaseError(e))
+            }
         }
+
     }
 
     suspend fun sendPassResetLink(email: String): Result<Unit> {
@@ -58,19 +68,18 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    suspend fun login(
+    fun login(
         email: String,
         password: String
-    ): Result<Unit> {
-        return try {
-            firebaseAuth
-                .signInWithEmailAndPassword(email, password)
-                .await()
-
-            Result.success(Unit)
-
-        } catch (e: Exception) {
-            Result.failure(Exception(mapFirebaseError(e)))
+    ) {
+        viewModelScope.launch {
+            _authState.value = AuthUiState.Loading
+            try {
+                firebaseAuth.signInWithEmailAndPassword(email, password).await()
+                _authState.value = AuthUiState.Success
+            } catch (e: Exception) {
+                _authState.value = AuthUiState.Error(e.message ?:"Error to get error :)")
+            }
         }
     }
 

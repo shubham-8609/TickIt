@@ -23,13 +23,11 @@ class SignUpFragment : Fragment() {
     private var _binding: FragmentSignUpBinding? = null
     private val binding get() = _binding!!
     private val authVM: AuthViewModel by activityViewModels()
-    private lateinit var loadingDialog: Dialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enterTransition = MaterialFade()
         exitTransition = MaterialFade()
-        setupLoadingDialog()
     }
 
 
@@ -49,12 +47,7 @@ class SignUpFragment : Fragment() {
     }
 
 
-    private fun setupLoadingDialog() {
-        loadingDialog = Dialog(requireContext())
-        loadingDialog.setContentView(R.layout.dialog_loading)
-        loadingDialog.setCancelable(false)
-        loadingDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-    }
+
 
     private fun validateInputs() {
         val username = binding.etUsername.text.toString()
@@ -83,21 +76,9 @@ class SignUpFragment : Fragment() {
             return
         }
 
-        loadingDialog.show()
         lifecycleScope.launch {
-            val result = authVM.signUp(username, email, password)
-            loadingDialog.dismiss()
-            if (result.isSuccess) {
-                Toast.makeText(requireContext(), "Sign Up Successful", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(requireActivity(), MainActivity::class.java))
-                requireActivity().finish()
-            } else {
-                Snackbar.make(
-                    binding.root,
-                    result.exceptionOrNull()?.message ?: "Sign Up Failed",
-                    Snackbar.LENGTH_LONG
-                ).show()
-            }
+            authVM.signUp(username, email, password)
+
         }
 
     }

@@ -15,6 +15,7 @@ import com.codeleg.tickit.databinding.ForgetPassLayoutBinding
 import com.codeleg.tickit.databinding.FragmentLoginBinding
 import com.codeleg.tickit.ui.activity.MainActivity
 import com.codeleg.tickit.ui.viewmodel.AuthViewModel
+import com.codeleg.tickit.utils.AuthUiState
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.platform.MaterialFade
@@ -25,20 +26,18 @@ class LoginFragment : Fragment() {
     var _binding: FragmentLoginBinding? = null
     val binding get() = _binding!!
     private val authVM: AuthViewModel by activityViewModels()
-    private lateinit var loadingDialog: Dialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enterTransition = MaterialFade()
         exitTransition = MaterialFade()
-        setupLoadingDialog()
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentLoginBinding.inflate(layoutInflater , container , false)
+        _binding = FragmentLoginBinding.inflate(layoutInflater, container, false)
 
         binding.tvSignUpRedirect.setOnClickListener {
             parentFragmentManager.beginTransaction()
@@ -52,27 +51,32 @@ class LoginFragment : Fragment() {
             dialog.setContentView(dialogBinding.root)
             dialogBinding.btnSend.setOnClickListener {
                 val email = dialogBinding.etEmail.text.toString()
-                if(email.isBlank()) {
+                if (email.isBlank()) {
                     dialogBinding.etEmail.error = "Invalid Email"
                     dialogBinding.etEmail.requestFocus()
                     return@setOnClickListener
                 }
-                loadingDialog.show()
                 lifecycleScope.launch {
                     val result = authVM.sendPassResetLink(email)
-                    loadingDialog.dismiss()
                     result.onSuccess {
-                        Toast.makeText(requireContext() , "Password reset link sent to your email." , Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            "Password reset link sent to your email.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         dialog.dismiss()
                     }
                     result.onFailure { exception ->
-                        Snackbar.make(binding.root , exception.message ?: "Failed to send reset link", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(
+                            binding.root,
+                            exception.message ?: "Failed to send reset link",
+                            Snackbar.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
             dialog.show()
         }
-
         return binding.root
     }
 
@@ -81,41 +85,21 @@ class LoginFragment : Fragment() {
         _binding = null
     }
 
-    private fun setupLoadingDialog() {
-    loadingDialog = Dialog(requireContext())
-    loadingDialog.setContentView(R.layout.dialog_loading)
-    loadingDialog.setCancelable(false)
-    loadingDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-    }
 
 
-private fun validateInputs() {
-   val email = binding.etEmail.text.toString()
-    val password = binding.etPassword.text.toString()
-    if(email.isBlank()){
-        binding.etEmail.error = "Invalid Email"
-        binding.etEmail.requestFocus()
-        return
-    }
-    if(password.isBlank()) {
-        binding.etPassword.error = "Invalid Password"
-        binding.etPassword.requestFocus()
-        return
-    }
-
-    loadingDialog.show()
-
-    lifecycleScope.launch {
-        val result = authVM.login(email, password)
-        loadingDialog.dismiss()
-        result.onSuccess {
-            Toast.makeText(requireContext() , "Login Successful", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(requireContext() , MainActivity::class.java))
-            requireActivity().finish()
+    private fun validateInputs() {
+        val email = binding.etEmail.text.toString()
+        val password = binding.etPassword.text.toString()
+        if (email.isBlank()) {
+            binding.etEmail.error = "Invalid Email"
+            binding.etEmail.requestFocus()
+            return
         }
-        result.onFailure { exception ->
-            Snackbar.make(binding.root , exception.message ?: "Login Failed", Snackbar.LENGTH_SHORT).show()
+        if (password.isBlank()) {
+            binding.etPassword.error = "Invalid Password"
+            binding.etPassword.requestFocus()
+            return
         }
+         authVM.login(email, password)
     }
-}
 }
