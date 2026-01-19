@@ -12,9 +12,13 @@ import com.codeleg.tickit.databinding.ActivityAuthBinding
 import com.codeleg.tickit.ui.fragment.LoginFragment
 import com.codeleg.tickit.ui.viewmodel.AuthViewModel
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
 import com.codeleg.tickit.R
+import com.codeleg.tickit.database.local.ThemePreferences
 import com.codeleg.tickit.utils.AuthUiState
+import com.codeleg.tickit.utils.ThemeMode
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 
@@ -22,9 +26,18 @@ class AuthActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAuthBinding
     private  val authVM: AuthViewModel by viewModels()
     private lateinit var loadingDialog: Dialog
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthBinding.inflate(layoutInflater)
+
+        lifecycleScope.launch {
+            ThemePreferences.getTheme(this@AuthActivity).first().also {
+                applyTheme(it)
+            }
+        }
+
         setContentView(binding.root)
         setupLoadingDialog()
         lifecycleScope.launch {
@@ -76,4 +89,24 @@ class AuthActivity : AppCompatActivity() {
             insets
         }
     }
+
+    private fun applyTheme(mode: ThemeMode) {
+        when (mode) {
+            ThemeMode.LIGHT ->
+                AppCompatDelegate.setDefaultNightMode(
+                    AppCompatDelegate.MODE_NIGHT_NO
+                )
+
+            ThemeMode.DARK ->
+                AppCompatDelegate.setDefaultNightMode(
+                    AppCompatDelegate.MODE_NIGHT_YES
+                )
+
+            ThemeMode.SYSTEM ->
+                AppCompatDelegate.setDefaultNightMode(
+                    AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                )
+        }
+    }
+
 }

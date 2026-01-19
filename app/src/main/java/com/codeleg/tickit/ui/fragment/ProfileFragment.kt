@@ -11,12 +11,15 @@ import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.codeleg.tickit.R
+import com.codeleg.tickit.database.local.ThemePreferences
 import com.codeleg.tickit.databinding.FragmentProfileBinding
 import com.codeleg.tickit.databinding.LayoutUpdatePassBinding
 import com.codeleg.tickit.ui.activity.AuthActivity
 import com.codeleg.tickit.ui.viewmodel.MainViewModel
+import com.codeleg.tickit.utils.ThemeMode
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.builtins.IntArraySerializer
 
@@ -48,8 +51,73 @@ class ProfileFragment : Fragment() {
             updatePassLogic()
         }
         binding.itemDeleteAccount.setOnClickListener { deleteAccountLogic() }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            ThemePreferences.getTheme(requireContext()).collect { mode ->
+                updateThemeSelection(mode)
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(400)
+            setupThemeChangeListener()
+        }
         return binding.root
     }
+
+    private fun updateThemeSelection(mode: ThemeMode) {
+        when (mode) {
+            ThemeMode.SYSTEM -> binding.rbSystem.isChecked = true
+            ThemeMode.LIGHT -> binding.rbLight.isChecked = true
+            ThemeMode.DARK -> binding.rbDark.isChecked = true
+        }
+    }
+
+
+
+    private fun setupThemeChangeListener() {
+        binding.rgTheme.setOnCheckedChangeListener { _, checkedId ->
+            val selectedMode = when (checkedId) {
+                R.id.rbLight -> ThemeMode.LIGHT
+                R.id.rbDark -> ThemeMode.DARK
+                else -> ThemeMode.SYSTEM
+            }
+            showThemeWarning()
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                ThemePreferences.setTheme(requireContext(), selectedMode)
+            }
+        }
+    }
+
+
+    private fun showThemeWarning() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Apply theme")
+            .setMessage(
+                "The app needs to restart to apply the selected theme. " +
+                        "This won’t affect your data."
+            )
+            .setPositiveButton("Restart") { _, _ ->
+                restartApp()
+            }
+            .setNegativeButton("Later", null)
+            .show()
+    }
+
+    private fun restartApp() {
+        val intent = requireActivity()
+            .packageManager
+            .getLaunchIntentForPackage(requireActivity().packageName)
+
+        intent?.addFlags(
+            Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_NEW_TASK
+        )
+
+        startActivity(intent!!)
+        requireActivity().finish()
+    }
+
 
     private fun deleteAccountLogic() {
         MaterialAlertDialogBuilder(requireContext())

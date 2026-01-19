@@ -52,7 +52,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.10.0")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0")
-
+    implementation("androidx.datastore:datastore-preferences:1.2.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
