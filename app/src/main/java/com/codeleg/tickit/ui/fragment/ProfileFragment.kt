@@ -1,5 +1,6 @@
 package com.codeleg.tickit.ui.fragment
 
+import android.content.Context
 import android.content.Intent
 import androidx.fragment.app.viewModels
 import android.os.Bundle
@@ -22,12 +23,16 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.builtins.IntArraySerializer
+import androidx.core.content.edit
+import com.codeleg.tickit.database.local.ThemeKeys
 
 class ProfileFragment : Fragment() {
 
     private  var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
     private val mainVM: MainViewModel by activityViewModels()
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,34 +41,75 @@ class ProfileFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
+
+        observeTheme()
+        observeDynamicColors()
+
+        setupThemeChangeListener()
+        setupDynamicColorListener()
 
         populateData()
         mainVM.loadUsername()
+
         binding.btnLogout.setOnClickListener { logout() }
-        binding.itemDeleteTodos.setOnClickListener {
-            deleteAllTodos()
-        }
-        binding.itemUpdatePassword.setOnClickListener {
-            updatePassLogic()
-        }
+        binding.itemDeleteTodos.setOnClickListener { deleteAllTodos() }
+        binding.itemUpdatePassword.setOnClickListener { updatePassLogic() }
         binding.itemDeleteAccount.setOnClickListener { deleteAccountLogic() }
 
+        return binding.root
+    }
+
+
+    private fun observeTheme() {
         viewLifecycleOwner.lifecycleScope.launch {
             ThemePreferences.getTheme(requireContext()).collect { mode ->
                 updateThemeSelection(mode)
             }
         }
-        viewLifecycleOwner.lifecycleScope.launch {
-            delay(400)
-            setupThemeChangeListener()
-        }
-        return binding.root
     }
 
+
+    private fun observeDynamicColors() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            ThemePreferences.isDynamicColorsEnabled(requireContext()).collect { enabled ->
+                binding.switchDynamicColors.isChecked = enabled
+            }
+        }
+    }
+
+
+    private fun setupThemeChangeListener() {
+        binding.rgTheme.setOnCheckedChangeListener { _, checkedId ->
+
+            val selectedMode = when (checkedId) {
+                R.id.rbLight -> ThemeMode.LIGHT
+                R.id.rbDark -> ThemeMode.DARK
+                else -> ThemeMode.SYSTEM
+            }
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                ThemePreferences.setTheme(requireContext(), selectedMode)
+            }
+
+            showThemeWarning()
+        }
+    }
+
+    private fun setupDynamicColorListener() {
+        binding.switchDynamicColors.setOnCheckedChangeListener { _, isChecked ->
+            viewLifecycleOwner.lifecycleScope.launch {
+                ThemePreferences.setDynamicColors(requireContext(), isChecked)
+            }
+
+            showThemeWarning()
+        }
+    }
     private fun updateThemeSelection(mode: ThemeMode) {
         when (mode) {
             ThemeMode.SYSTEM -> binding.rbSystem.isChecked = true
@@ -74,22 +120,6 @@ class ProfileFragment : Fragment() {
 
 
 
-    private fun setupThemeChangeListener() {
-        binding.rgTheme.setOnCheckedChangeListener { _, checkedId ->
-            val selectedMode = when (checkedId) {
-                R.id.rbLight -> ThemeMode.LIGHT
-                R.id.rbDark -> ThemeMode.DARK
-                else -> ThemeMode.SYSTEM
-            }
-            showThemeWarning()
-
-            viewLifecycleOwner.lifecycleScope.launch {
-                ThemePreferences.setTheme(requireContext(), selectedMode)
-            }
-        }
-    }
-
-
     private fun showThemeWarning() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Apply theme")
@@ -97,25 +127,8 @@ class ProfileFragment : Fragment() {
                 "The app needs to restart to apply the selected theme. " +
                         "This won’t affect your data."
             )
-            .setPositiveButton("Restart") { _, _ ->
-                restartApp()
-            }
-            .setNegativeButton("Later", null)
+
             .show()
-    }
-
-    private fun restartApp() {
-        val intent = requireActivity()
-            .packageManager
-            .getLaunchIntentForPackage(requireActivity().packageName)
-
-        intent?.addFlags(
-            Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_NEW_TASK
-        )
-
-        startActivity(intent!!)
-        requireActivity().finish()
     }
 
 
