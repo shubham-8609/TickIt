@@ -31,6 +31,8 @@ class ProfileFragment : Fragment() {
     private  var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
     private val mainVM: MainViewModel by activityViewModels()
+    private var isUserThemeToggle = false
+    private var isUserDynamicToggle = false
 
 
 
@@ -86,7 +88,10 @@ class ProfileFragment : Fragment() {
 
     private fun setupThemeChangeListener() {
         binding.rgTheme.setOnCheckedChangeListener { _, checkedId ->
-
+        if(!isUserThemeToggle){
+                isUserThemeToggle = true
+                return@setOnCheckedChangeListener
+        }
             val selectedMode = when (checkedId) {
                 R.id.rbLight -> ThemeMode.LIGHT
                 R.id.rbDark -> ThemeMode.DARK
@@ -102,7 +107,12 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setupDynamicColorListener() {
+
         binding.switchDynamicColors.setOnCheckedChangeListener { _, isChecked ->
+            if(!isUserDynamicToggle){
+                isUserDynamicToggle = true
+                return@setOnCheckedChangeListener
+            }
             viewLifecycleOwner.lifecycleScope.launch {
                 ThemePreferences.setDynamicColors(requireContext(), isChecked)
             }
