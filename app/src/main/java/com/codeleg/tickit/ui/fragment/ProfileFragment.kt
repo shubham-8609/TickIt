@@ -20,10 +20,14 @@ import com.codeleg.tickit.ui.viewmodel.MainViewModel
 import com.codeleg.tickit.utils.ThemeMode
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import androidx.transition.AutoTransition
+import androidx.transition.TransitionManager
+
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.builtins.IntArraySerializer
 import androidx.core.content.edit
+import androidx.lifecycle.VIEW_MODEL_STORE_OWNER_KEY
 import com.codeleg.tickit.database.local.ThemeKeys
 
 class ProfileFragment : Fragment() {
@@ -33,6 +37,8 @@ class ProfileFragment : Fragment() {
     private val mainVM: MainViewModel by activityViewModels()
     private var isUserThemeToggle = false
     private var isUserDynamicToggle = false
+    private var isAppearanceExpanded = false
+
 
 
 
@@ -63,6 +69,26 @@ class ProfileFragment : Fragment() {
         binding.itemDeleteTodos.setOnClickListener { deleteAllTodos() }
         binding.itemUpdatePassword.setOnClickListener { updatePassLogic() }
         binding.itemDeleteAccount.setOnClickListener { deleteAccountLogic() }
+        lifecycleScope.launch {
+            delay(150)
+            binding.layoutAppearanceContent.visibility  = View.GONE
+        }
+        binding.cardAppearanceHeader.setOnClickListener {
+            isAppearanceExpanded = !isAppearanceExpanded
+
+            TransitionManager.beginDelayedTransition(
+                binding.root as ViewGroup,
+                AutoTransition()
+            )
+
+            binding.layoutAppearanceContent.visibility =
+                if (isAppearanceExpanded) View.VISIBLE else View.GONE
+
+            binding.ivAppearanceArrow.animate()
+                .rotation(if (isAppearanceExpanded) 180f else 0f)
+                .setDuration(200)
+                .start()
+        }
 
         return binding.root
     }
