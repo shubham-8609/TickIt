@@ -111,6 +111,7 @@
         <LinearLayout
             android:id="@+id/layoutAppearanceContent"
             android:layout_width="match_parent"
+            android:visibility="invisible"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             >

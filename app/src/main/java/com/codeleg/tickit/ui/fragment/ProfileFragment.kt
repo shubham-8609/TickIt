@@ -70,7 +70,7 @@ class ProfileFragment : Fragment() {
         binding.itemUpdatePassword.setOnClickListener { updatePassLogic() }
         binding.itemDeleteAccount.setOnClickListener { deleteAccountLogic() }
         lifecycleScope.launch {
-            delay(150)
+            delay(50)
             binding.layoutAppearanceContent.visibility  = View.GONE
         }
         binding.cardAppearanceHeader.setOnClickListener {
