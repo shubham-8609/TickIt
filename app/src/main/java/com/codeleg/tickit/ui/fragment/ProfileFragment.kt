@@ -251,26 +251,32 @@ class ProfileFragment : Fragment() {
             }
             .setPositiveButton("Delete") { dialog, _ ->
                 dialog.dismiss()
-                mainVM.deleteAllTodos { success, errorMsg ->
-                    if (success) {
-                        populateData()
-                        MaterialAlertDialogBuilder(requireContext())
-                            .setTitle("Success")
-                            .setMessage("All todos have been deleted.")
-                            .setPositiveButton("OK") { successDialog, _ ->
-                                successDialog.dismiss()
-                            }
-                            .show()
-                    } else {
-                        MaterialAlertDialogBuilder(requireContext())
-                            .setTitle("Error")
-                            .setMessage(errorMsg ?: "Unknown error occurred")
-                            .setPositiveButton("OK") { errDialog, _ ->
-                                errDialog.dismiss()
-                            }
-                            .show()
-                    }
+                lifecycleScope.launch {
+                    val result = mainVM.deleteAllTodos()
+
+                    result.fold(
+                        onSuccess = {
+                            populateData()
+                            MaterialAlertDialogBuilder(requireContext())
+                                .setTitle("Success")
+                                .setMessage("All todos have been deleted.")
+                                .setPositiveButton("OK") { successDialog, _ ->
+                                    successDialog.dismiss()
+                                }
+                                .show()
+                        },
+                        onFailure = {
+                            MaterialAlertDialogBuilder(requireContext())
+                                .setTitle("Error")
+                                .setMessage(it.localizedMessage ?: "Unknown error occurred")
+                                .setPositiveButton("OK") { errDialog, _ ->
+                                    errDialog.dismiss()
+                                }
+                                .show()
+                        }
+                    )
                 }
+
             }
             .show()
     }

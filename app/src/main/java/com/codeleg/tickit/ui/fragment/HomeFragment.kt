@@ -28,7 +28,7 @@ import java.util.Locale
 
 class HomeFragment : Fragment() {
 
-    private val mainVM: MainViewModel by activityViewModels{
+    private val mainVM: MainViewModel by activityViewModels {
         (requireActivity() as MainActivity).viewModelFactory
     }
 
@@ -128,15 +128,15 @@ class HomeFragment : Fragment() {
     private fun observeTodos() {
         mainVM.allTodos.observe(viewLifecycleOwner) {
             lifecycleScope.launch {
-            fullTodoList = it
-            todoAdapter.submitList(it)
+                fullTodoList = it
+                todoAdapter.submitList(it)
             }
             showImage()
         }
     }
 
-    private fun showImage(){
-        if(fullTodoList.isEmpty()) {
+    private fun showImage() {
+        if (fullTodoList.isEmpty()) {
             binding.rvTodos.visibility = View.GONE
             binding.imgNoTodos.visibility = View.VISIBLE
         } else {
@@ -170,25 +170,22 @@ class HomeFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            val result = mainVM.addTodo(Todo(title = title))
-            result.onSuccess {
+            try {
+                mainVM.addTodo(Todo(title = title))
                 binding.etAddTodo.text?.clear()
                 showSnack("Todo added successfully")
-            }.onFailure { e ->
+            } catch (e: Exception) {
                 showSnack("Error adding todo: ${e.localizedMessage}")
             }
         }
     }
 
     private fun onItemCheckedChange(todo: Todo, isChecked: Boolean): Boolean {
-
-        lifecycleScope.launch {
-            val result = mainVM.updateTodoComplete(todo.id, isChecked)
-            result.onSuccess {
-                binding.chipAll.isChecked = true
-            }.onFailure { e ->
-                showSnack("Error updating todo: ${e.localizedMessage}")
-            }
+        try {
+            mainVM.updateTodoComplete(todo.id, isChecked)
+            binding.chipAll.isChecked = true
+        } catch (e: Exception) {
+            showSnack("Error updating todo: ${e.localizedMessage}")
         }
         return true
     }
@@ -198,16 +195,21 @@ class HomeFragment : Fragment() {
     }
 
     private fun onClickDelete(todo: Todo) {
-        mainVM.deleteTodo(todo.id) { isDeleted, msg ->
-            showSnack(
-                if (isDeleted) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val result = mainVM.deleteTodo(todo.id)
+
+            result.fold(
+                onSuccess = {
+                    showSnack("Todo deleted successfully")
                     binding.chipAll.isChecked = true
-                    "Todo deleted successfully"
+                },
+                onFailure = {
+                    showSnack("Error deleting todo: ${it.localizedMessage}")
                 }
-                else msg ?: "Error deleting todo"
             )
         }
     }
+
 
     // -------------------- DIALOG --------------------
 
@@ -282,15 +284,19 @@ class HomeFragment : Fragment() {
                     binding.spPriority.text.toString()
                 ).coerceAtLeast(1)
             )
+            lifecycleScope.launch {
+                val result = mainVM.updateTodo(todo)
 
-            mainVM.updateTodo(updatedTodo) { isUpdated, msg ->
-                if (isUpdated) dialog.dismiss()
-
-                showSnack(
-                    if (isUpdated) "Todo updated successfully"
-                    else msg ?: "Error updating todo"
+                result.fold(
+                    onSuccess = {
+                        showSnack("Todo updated successfully")
+                    },
+                    onFailure = {
+                        showSnack(it.localizedMessage ?: "Update failed")
+                    }
                 )
             }
+
             dialog.dismiss()
         }
     }
@@ -301,13 +307,19 @@ class HomeFragment : Fragment() {
         binding: DialogTodoDetailBinding
     ) {
         binding.btnDelete.setOnClickListener {
-            mainVM.deleteTodo(todo.id) { isDeleted, msg ->
-                showSnack(
-                    if (isDeleted) "Todo deleted successfully"
-                    else msg ?: "Error deleting todo"
-                )
+            viewLifecycleOwner.lifecycleScope.launch {
+                val result = mainVM.deleteTodo(todo.id)
+
+                result.fold(
+                    onSuccess = {
+                        showSnack("Todo deleted successfully")
+                    },
+                    onFailure = {
+                        showSnack("Error deleting todo: ${it.localizedMessage}")
+                    })
             }
             dialog.dismiss()
+
         }
     }
 

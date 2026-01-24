@@ -45,18 +45,31 @@ class TodoRepository {
         ref.child(id).setValue(todo.copy(id = id)).await()
     }
 
-    suspend fun updateTodo(todo: Todo) {
-        val userId = uid() ?: throw Exception("User not logged in")
-        val updates = mapOf(
-            "title" to todo.title,
-            "completed" to todo.completed,
-            "priority" to todo.priority,
-            "updatedAt" to System.currentTimeMillis()
-        )
-        firebaseDB.getReference("todos").child(userId).child(todo.id).updateChildren(updates)
-            .await()
+    suspend fun updateTodo(todo: Todo): Result<Unit> {
+        return try {
+            val userId = uid()
+                ?: return Result.failure(Exception("User not logged in"))
 
+            val updates = mapOf(
+                "title" to todo.title,
+                "completed" to todo.completed,
+                "priority" to todo.priority,
+                "updatedAt" to System.currentTimeMillis()
+            )
+
+            firebaseDB.getReference("todos")
+                .child(userId)
+                .child(todo.id)
+                .updateChildren(updates)
+                .await()
+
+            Result.success(Unit)
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
+
 
     suspend fun updateTodoCompletion(todoId: String, completed: Boolean) {
         val userId = uid() ?: throw Exception("User not logged in")
@@ -70,22 +83,37 @@ class TodoRepository {
             .await()
     }
 
-    suspend fun deleteTodo(todoId: String) {
-        val userId = uid() ?: throw Exception("User not logged in")
+    suspend fun deleteTodo(todoId: String): Result<Unit> {
+        return try {
+            val userId = uid() ?: return Result.failure(Exception("User not logged in"))
 
-        firebaseDB.getReference("todos")
-            .child(userId)
-            .child(todoId)
-            .removeValue()
-            .await()
+            firebaseDB.getReference("todos")
+                .child(userId)
+                .child(todoId)
+                .removeValue()
+                .await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
-    suspend fun deleteAllTodos() {
-        val userId = uid() ?: throw Exception("User not logged in")
 
-        firebaseDB.getReference("todos")
-            .child(userId)
-            .removeValue()
-            .await()
+    suspend fun deleteAllTodos(): Result<Unit> {
+        return try {
+            val userId = uid()
+                ?: return Result.failure(Exception("User not logged in"))
+
+            firebaseDB.getReference("todos")
+                .child(userId)
+                .removeValue()
+                .await()
+
+            Result.success(Unit)
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
 
