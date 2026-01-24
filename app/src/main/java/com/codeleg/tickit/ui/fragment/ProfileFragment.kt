@@ -29,12 +29,15 @@ import kotlinx.serialization.builtins.IntArraySerializer
 import androidx.core.content.edit
 import androidx.lifecycle.VIEW_MODEL_STORE_OWNER_KEY
 import com.codeleg.tickit.database.local.ThemeKeys
+import com.codeleg.tickit.ui.activity.MainActivity
 
 class ProfileFragment : Fragment() {
 
     private  var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
-    private val mainVM: MainViewModel by activityViewModels()
+    private val mainVM: MainViewModel by activityViewModels{
+        (requireActivity() as MainActivity).viewModelFactory
+    }
     private var isUserThemeToggle = false
     private var isUserDynamicToggle = false
     private var isAppearanceExpanded = false

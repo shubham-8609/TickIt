@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.codeleg.tickit.database.model.Todo
+import com.codeleg.tickit.database.repository.TodoRepository
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
@@ -16,7 +17,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.tasks.await
 
-class MainViewModel : ViewModel() {
+class MainViewModel(todoRepo: TodoRepository) : ViewModel() {
     val firebaseDB by lazy { FirebaseDatabase.getInstance() }
     private val _allTodos = MutableLiveData<List<Todo>>()
     val allTodos: LiveData<List<Todo>> get() = _allTodos

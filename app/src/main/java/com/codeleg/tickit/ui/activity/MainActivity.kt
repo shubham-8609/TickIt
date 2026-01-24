@@ -8,6 +8,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import com.codeleg.tickit.R
+import com.codeleg.tickit.ui.viewmodel.MainViewModelFactory
+import com.codeleg.tickit.database.repository.TodoRepository
 import com.codeleg.tickit.databinding.ActivityMainBinding
 import com.codeleg.tickit.ui.fragment.HomeFragment
 import com.codeleg.tickit.ui.fragment.ProfileFragment
@@ -18,7 +20,12 @@ import kotlin.getValue
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val mainVM: MainViewModel by viewModels()
+    private val todoRepo : TodoRepository by lazy { TodoRepository() }
+
+    val viewModelFactory by lazy {
+        MainViewModelFactory(todoRepo)
+    }
+    val mainVM: MainViewModel by viewModels {viewModelFactory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

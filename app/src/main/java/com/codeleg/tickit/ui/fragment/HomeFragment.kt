@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.codeleg.tickit.database.model.Todo
 import com.codeleg.tickit.databinding.DialogTodoDetailBinding
 import com.codeleg.tickit.databinding.FragmentHomeBinding
+import com.codeleg.tickit.ui.activity.MainActivity
 import com.codeleg.tickit.ui.adapter.TodoListAdapter
 import com.codeleg.tickit.ui.viewmodel.MainViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -27,7 +28,9 @@ import java.util.Locale
 
 class HomeFragment : Fragment() {
 
-    private val mainVM: MainViewModel by activityViewModels()
+    private val mainVM: MainViewModel by activityViewModels{
+        (requireActivity() as MainActivity).viewModelFactory
+    }
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
