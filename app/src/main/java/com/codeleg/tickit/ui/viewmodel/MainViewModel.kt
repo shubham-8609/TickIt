@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codeleg.tickit.database.model.Todo
 import com.codeleg.tickit.database.repository.TodoRepository
+import com.codeleg.tickit.database.repository.UserRepository
 import com.codeleg.tickit.utils.TodosUiState
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -26,7 +27,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-class MainViewModel(val todoRepo: TodoRepository) : ViewModel() {
+class MainViewModel(val todoRepo: TodoRepository , val userRepo: UserRepository) : ViewModel() {
     val firebaseDB by lazy { FirebaseDatabase.getInstance() }
     val todosUiState: StateFlow<TodosUiState> =
         todoRepo.observeTodos()
@@ -66,13 +67,21 @@ class MainViewModel(val todoRepo: TodoRepository) : ViewModel() {
 
     fun getCurrentUser() = FirebaseAuth.getInstance().currentUser
     fun loadUsername() {
-        firebaseDB.getReference("users").child(uid ?: return).get().addOnSuccessListener {
-            _username.value = it.child("username").value?.toString() ?: ""
+        viewModelScope.launch {
+            userRepo.loadUsername().fold(
+                onSuccess = { username ->
+                    _username.value = username
+                },
+                onFailure = {
+                    _username.value = ""
+                }
+            )
         }
     }
 
+
     fun logout() {
-        FirebaseAuth.getInstance().signOut()
+        userRepo.logout()
     }
 
     suspend fun deleteAllTodos(): Result<Unit> {
@@ -80,39 +89,16 @@ class MainViewModel(val todoRepo: TodoRepository) : ViewModel() {
     }
 
 
-    suspend fun udpatePass(
+    suspend fun updatePassword(
         oldPass: String,
         newPass: String
     ): Result<Unit> {
-        val user = getCurrentUser()
-            ?: return Result.failure(Exception("User not logged in"))
-
-        return try {
-            val credential = EmailAuthProvider
-                .getCredential(user.email!!, oldPass)
-
-            user.reauthenticate(credential).await()
-            user.updatePassword(newPass).await()
-
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        return userRepo.updatePassword(oldPass, newPass)
     }
 
-    suspend fun deleteAccount(): Result<Unit> {
-        val user = getCurrentUser()
-            ?: return Result.failure(Exception("User not logged in"))
-        val currentUid = uid ?: return Result.failure(Exception("User not logged in"))
-
-        return try {
-            firebaseDB.getReference("users").child(currentUid).removeValue().await()
-            firebaseDB.getReference("todos").child(currentUid).removeValue().await()
-            user.delete().await()
-
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
+    fun deleteAccount(onResult: (Result<Unit>) -> Unit) {
+        viewModelScope.launch {
+            onResult(userRepo.deleteAccount())
         }
     }
 

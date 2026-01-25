@@ -180,16 +180,29 @@ class ProfileFragment : Fragment() {
             }
             .setPositiveButton("Delete") { dialog, _ ->
                 dialog.dismiss()
-                lifecycleScope.launch {
-                    val result = mainVM.deleteAccount()
+
+                mainVM.deleteAccount { result ->
+                    if (!isAdded) return@deleteAccount
+
                     if (result.isSuccess) {
-                        startActivity(Intent(requireActivity(), AuthActivity::class.java))
-                        Toast.makeText(requireContext() , "Account deleted successfully", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            "Account deleted successfully",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        startActivity(
+                            Intent(requireActivity(), AuthActivity::class.java)
+                        )
                         requireActivity().finish()
+
                     } else {
                         MaterialAlertDialogBuilder(requireContext())
                             .setTitle("Error")
-                            .setMessage(result.exceptionOrNull()?.localizedMessage ?: "Unknown error occurred")
+                            .setMessage(
+                                result.exceptionOrNull()?.localizedMessage
+                                    ?: "Unknown error occurred"
+                            )
                             .setPositiveButton("OK") { errDialog, _ ->
                                 errDialog.dismiss()
                             }
@@ -197,6 +210,7 @@ class ProfileFragment : Fragment() {
                     }
                 }
             }
+
             .show()
     }
 
@@ -211,33 +225,37 @@ class ProfileFragment : Fragment() {
                 dialogBinding.etNewPassword.error = "Fields cannot be empty"
                 return@setOnClickListener
             }
-            if(newPass.length < 6){
-                dialogBinding.etNewPassword.error = "Password must be at least 6 characters long"
+            if (newPass.length < 6) {
+                dialogBinding.etNewPassword.error =
+                    "Password must be at least 6 characters long"
                 return@setOnClickListener
             }
+
             lifecycleScope.launch {
-                val result = mainVM.udpatePass(oldPass, newPass)
+                val result = mainVM.updatePassword(oldPass, newPass)
+
+                if (!isAdded) return@launch
+
                 if (result.isSuccess) {
                     dialog.dismiss()
+
                     MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Success")
                         .setMessage("Password updated successfully.")
-                        .setPositiveButton("OK") { successDialog, _ ->
-                            successDialog.dismiss()
-                        }
+                        .setPositiveButton("OK") { d, _ -> d.dismiss() }
                         .show()
+
                 } else {
+                    val errorMsg = result.exceptionOrNull()?.localizedMessage
+                        ?: "Unable to update password. Please try again."
+
                     MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Error")
-                        .setMessage(result.exceptionOrNull()?.localizedMessage ?: "Unknown error occurred")
-                        .setPositiveButton("OK") { errDialog, _ ->
-                            errDialog.dismiss()
-                        }
+                        .setMessage(errorMsg)
+                        .setPositiveButton("OK") { d, _ -> d.dismiss() }
                         .show()
                 }
             }
-
-
         }
         dialog.show()
     }

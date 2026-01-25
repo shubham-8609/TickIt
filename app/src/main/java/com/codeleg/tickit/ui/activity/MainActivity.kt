@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import com.codeleg.tickit.R
 import com.codeleg.tickit.ui.viewmodel.MainViewModelFactory
 import com.codeleg.tickit.database.repository.TodoRepository
+import com.codeleg.tickit.database.repository.UserRepository
 import com.codeleg.tickit.databinding.ActivityMainBinding
 import com.codeleg.tickit.ui.fragment.HomeFragment
 import com.codeleg.tickit.ui.fragment.ProfileFragment
@@ -21,9 +22,10 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val todoRepo : TodoRepository by lazy { TodoRepository() }
+    private val userRepo : UserRepository by lazy { UserRepository() }
 
     val viewModelFactory by lazy {
-        MainViewModelFactory(todoRepo)
+        MainViewModelFactory(todoRepo , userRepo)
     }
     val mainVM: MainViewModel by viewModels {viewModelFactory }
 
