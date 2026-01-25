@@ -9,7 +9,9 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.codeleg.tickit.database.model.Todo
 import com.codeleg.tickit.databinding.DialogTodoDetailBinding
@@ -17,6 +19,7 @@ import com.codeleg.tickit.databinding.FragmentHomeBinding
 import com.codeleg.tickit.ui.activity.MainActivity
 import com.codeleg.tickit.ui.adapter.TodoListAdapter
 import com.codeleg.tickit.ui.viewmodel.MainViewModel
+import com.codeleg.tickit.utils.TodosUiState
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
@@ -49,7 +52,6 @@ class HomeFragment : Fragment() {
 
         setupRecyclerView()
         observeTodos()
-        loadTodos()
         setupFiltering()
         setUpSearchFeature()
 
@@ -126,14 +128,38 @@ class HomeFragment : Fragment() {
     }
 
     private fun observeTodos() {
-        mainVM.allTodos.observe(viewLifecycleOwner) {
-            lifecycleScope.launch {
-                fullTodoList = it
-                todoAdapter.submitList(it)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mainVM.todosUiState.collect { state ->
+                    if (_binding == null || !isAdded) return@collect
+
+                    when (state) {
+
+                        is TodosUiState.Loading -> {
+                            binding.loadingBar.show()
+                            binding.rvTodos.visibility = View.GONE
+                        }
+
+                        is TodosUiState.Success -> {
+                            binding.loadingBar.hide()
+                            binding.rvTodos.visibility = View.VISIBLE
+
+                            fullTodoList = state.todos
+                            todoAdapter.submitList(state.todos)
+                            showImage()
+                        }
+
+                        is TodosUiState.Error -> {
+                            binding.loadingBar.hide()
+                            binding.rvTodos.visibility = View.VISIBLE
+                            showSnack("Error loading todos: ${state.message}")
+                        }
+                    }
+                }
             }
-            showImage()
         }
     }
+
 
     private fun showImage() {
         if (fullTodoList.isEmpty()) {
@@ -142,21 +168,6 @@ class HomeFragment : Fragment() {
         } else {
             binding.imgNoTodos.visibility = View.GONE
             binding.rvTodos.visibility = View.VISIBLE
-        }
-    }
-
-    private fun loadTodos() {
-        if (_binding == null || !isAdded) return
-
-        binding.loadingBar.show()
-        binding.rvTodos.visibility = View.GONE
-
-        mainVM.loadTodos { isSuccess, msg ->
-            if (_binding == null || !isAdded) return@loadTodos
-            binding.loadingBar.hide()
-            binding.rvTodos.visibility = View.VISIBLE
-
-            if (!isSuccess) showSnack("Error loading todos: ${msg ?: "Unknown error"}")
         }
     }
 

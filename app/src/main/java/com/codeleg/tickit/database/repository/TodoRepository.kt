@@ -6,6 +6,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
@@ -13,30 +14,42 @@ import kotlinx.coroutines.tasks.await
 class TodoRepository {
     private val firebaseDB = FirebaseDatabase.getInstance()
     private val auth = FirebaseAuth.getInstance()
-    private var todosListener: ValueEventListener? = null
     private fun uid(): String? = auth.currentUser?.uid
 
 
     fun observeTodos(): Flow<List<Todo>> = callbackFlow {
         val userId = uid() ?: run {
-            close(Exception("User not logged in"))
+            close(IllegalStateException("User not logged in"))
             return@callbackFlow
         }
-        val todosRef = firebaseDB.getReference("todos").child(userId).orderByChild("createdAt")
+
+        val todosRef = firebaseDB
+            .getReference("todos")
+            .child(userId)
+            .orderByChild("createdAt")
+
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val todos = snapshot.children.mapNotNull { it.getValue(Todo::class.java) }
-                trySend(todos)
+                val todos = snapshot.children
+                    .mapNotNull { it.getValue(Todo::class.java) }
+                    .sortedByDescending { it.createdAt } // optional
+
+                trySend(todos).isSuccess
             }
 
             override fun onCancelled(error: DatabaseError) {
-                close(Exception(error.message))
+                close(error.toException())
             }
         }
-        todosListener = listener
+
         todosRef.addValueEventListener(listener)
 
+        // 🔥 VERY IMPORTANT
+        awaitClose {
+            todosRef.removeEventListener(listener)
+        }
     }
+
 
     suspend fun addTodo(todo: Todo) {
         val userId = uid() ?: throw Exception("User not logged in")
