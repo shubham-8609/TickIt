@@ -129,6 +129,14 @@ class TodoRepository {
         }
     }
 
+    suspend fun getIncompleteCount(): Int {
+        val userId = uid() ?: throw Exception("User not logged in")
+
+        val snapshot = firebaseDB.getReference("todos").child(userId)
+            .orderByChild("completed").equalTo(false).get().await()
+        return snapshot.children.count()
+    }
+
 
 
 }
